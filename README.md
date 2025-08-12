@@ -40,6 +40,15 @@ SOLID = usar a orientação a objetos do jeito certo. Linguagem Small Talk
   
   Interface Segregation Principle
     Deveria ter sempre uma interface no meio para a ver uma conversa entre duas classes.
+
+
+aula 3 - 11/08
+
+
+
+aula 4 - 12/08
+
+padrão 
     
 
 
