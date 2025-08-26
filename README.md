@@ -176,3 +176,36 @@ LEITURA CAPÍTULO 6
 
   
   Dependency 
+
+  _____________________________________________________________________________________
+  Aula - 26/08
+
+  Livro Fundamentos da arquitetura de software: uma abordagem de engenharia
+
+  3 coisas que montam a estrututa da arquitetura / design do sistema.
+
+  CARACTERÍSTICAS DA ARQUITETURA:
+    Disponibilidade, Confiabilidade, Testabilidade, Escalabilidade, Segurança, Agilidade, Tolerância a falhas, Elasticidade, Recuperabilidade, Desempenho,        Implementabilidade, Capacidade de aprendizagem.
+
+Disponibilidade: Sistema estar acessível e funcionando quando necessário.
+Confiabilidade: Capacidade de funcionar sem falhas por um período.
+Testabilidade: Facilidade de testar o sistema para encontrar erros.
+Escalabilidade: Sistema crescer sem perder desempenho.
+Segurança: Proteção contra acessos e ataques não autorizados.
+Agilidade: Rapidez para adaptar e implementar mudanças.
+Tolerância a falhas: Capacidade de continuar funcionando mesmo quando algo falha.
+Elasticidade: Ajuste automático da capacidade conforme a demanda.
+Recuperabilidade: Rapidez em se recuperar após uma falha.
+Desempenho: Resposta rápida e eficiente do sistema.
+Implementabilidade: Facilidade de construir e manter o sistema.
+Capacidade de aprendizagem: Sistema que pode evoluir ou se adaptar com base em dados ou feedback.
+
+
+  DECISÕES DA ARQUITETURA:
+    Regras que precisam ser mantidas no nosso sistema para que ele tenha o minimo de domínio, sustento.
+    São regras e escolhas fundamentais que definem como o sistema vai funcionar e se manter estável. Garantem a coerência, segurança e eficiência do sistema ao longo do tempo.
+
+  PRINCÍPIOS DO DESIGN:
+
+  Boas práticas. Coisas que sempre que possível deveríamos usar.
+  Boas práticas que orientam a criação de sistemas, como modularidade, simplicidade, reutilização, separação de responsabilidades, e clareza. Aplicá-los ajuda a ter sistemas mais fáceis de entender, manter e evoluir.
