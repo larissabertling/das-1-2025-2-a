@@ -209,3 +209,79 @@ Capacidade de aprendizagem: Sistema que pode evoluir ou se adaptar com base em d
 
   Boas práticas. Coisas que sempre que possível deveríamos usar.
   Boas práticas que orientam a criação de sistemas, como modularidade, simplicidade, reutilização, separação de responsabilidades, e clareza. Aplicá-los ajuda a ter sistemas mais fáceis de entender, manter e evoluir.
+
+________________________________________________________________________________________________________
+Aula 01/09
+
+CARACTERÍSTICAS DA ARQUITETURA = Requisitos NÃO funcionais
+
+É impossível que um sistema atenda 100% todos os itens de características.
+
+Decisão arquitetural é quando escolho qual arquitetura utilizar.
+
+Funções do arquiteto:
+
+    Tomar decisões de arquitetura – 
+          Responsável por definir a estrutura e os padrões principais do sistema, garantindo que suportem os        requisitos técnicos e           de negócio.
+          Orientação – Guiar a equipe de desenvolvimento nas direções corretas, explicando os motivos das decisões tomadas.
+          Não especificar as escolhas da tecnologia – Deve indicar direções, mas não impor ferramentas específicas, deixando espaço para            a equipe propor alternativas.
+
+    Analisar continuamente a arquitetura – 
+          Avaliar de forma recorrente se a arquitetura ainda atende às necessidades do projeto, ajustando quando necessário.
+
+    Reconstruir partes do código – 
+          Quando a arquitetura não atende mais aos requisitos, pode ser preciso refatorar ou redesenhar partes do sistema.
+
+    Manter-se atualizado com as últimas tendências – 
+          Estudar novas práticas, padrões, frameworks e tecnologias para trazer inovação e melhorias ao projeto.
+
+    Assegurar a conformidade com as decisões – 
+          Garantir que o time siga as diretrizes arquiteturais, evitando desvios que possam gerar problemas futuros.
+
+    Exposição e experiência diversificadas – 
+          Ter vivência com diferentes linguagens, frameworks, ambientes e domínios, para propor soluções mais eficazes.
+
+    Conhecimento sobre o domínio de negócio – 
+          Entender o contexto, processos e necessidades da área de negócio para alinhar a arquitetura aos objetivos da organização.
+
+    Habilidades interpessoais – 
+          Saber comunicar, negociar e mediar conflitos com diferentes perfis de stakeholders, incluindo desenvolvedores, gerentes e       clientes.
+
+    Entender e lidar bem com questões políticas – 
+          Compreender as dinâmicas organizacionais, influências e restrições internas para tomar decisões mais realistas e viáveis.
+
+
+DEVOPS = maneira de entregar valor pro cliente mais rápido.
+Entregar mais rápido funcionalidade, valor.
+
+Devops é meio que se der um problema, todos do devops precisam estar "aptos" a fazer tudo. Todo mundo faz tudo
+
+PLANEJAMENTO
+CRIAÇÃO
+OPERAÇÃO
+FEEDBACK
+COMENTÁRIOS CONTÍNUOS
+IMPLANTAR
+INTEGRAÇÃO CONTÍNUA
+
+
+
+
+
+
+
+  Tomar decisões de arquitetura
+      Orientação
+      Não especificar as escolhas da tecnologia.
+      
+  Analisar continuamente a arquitetura
+      E as vezes precisar reconstruir uma parte do código.
+      
+  Manter-se atualizado com as últimas tendências
+
+  
+  Assegurar a confirmidade com as decisões
+  Exposição e experiência diversificadas.
+  Conhecimento sobre o domínio de negócio
+  Ter habilidades interpessoais
+  Entender e lidar bem com questões políticas
