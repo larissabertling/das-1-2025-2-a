@@ -285,3 +285,20 @@ INTEGRAÇÃO CONTÍNUA
   Conhecimento sobre o domínio de negócio
   Ter habilidades interpessoais
   Entender e lidar bem com questões políticas
+
+
+____________________________________________________________________________________________
+Aula 02/09
+Resumo Capítulo 2: Pensamnento Arquitetônico
+
+
+
+_________________________________________________________________________________________
+Aula 08/09
+Resumo: Analisando Trade - Offs
+
+
+_______________________________________________________________________________________
+Aula 09/09
+Código
+
