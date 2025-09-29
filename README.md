@@ -1,6 +1,6 @@
 # das-1-2025-2-a
 
-aula 1 - 04/08
+**aula 1 - 04/08** 
 
 - Principios de projeto de código
 - Padronização de código
@@ -21,7 +21,7 @@ HERANÇA > IMPLEMENTAÇÃO > ASSOCIAÇÃO
 Autoacoplamento - toda vez que mexo num pedaço do código, altera outro
 
 _______________________________________________________________________________________________________________________________________
-aula 2 - 05/08
+**aula 2 - 05/08**
 
 Robert Martin - Referência na área de software. Um dos maiores nomes da computação.
   Livros dele: código limpo, arquitetura limpa
@@ -113,7 +113,7 @@ public class Controlador implements ActionListener{
 
 
 _____________________________________________________________________________________________
-aula 3 - 11/08
+**aula 3 - 11/08**
 SOLID
   Princípio da inversão de dependências
     Esse princípio recomenda que uma classe cliente deve estabelecer dependências prioritariamente com abstrações e não com implementações concretas, pois abstrações (isto é,            interfaces) são mais estáveis do que implementações concretas (isto é, classes). A ideia é então trocar (ou inverter) as dependências: em vez de depender de classes concretas, clientes devem depender de interfaces. Portanto, um nome mais intuitivo para o princípio seria Prefira Interfaces a Classes.
@@ -144,7 +144,7 @@ SOLID
 
       
 _______________________________________________________________________________________________
-aula 4 - 12/08
+**aula 4 - 12/08**
 
     Princípio de Substituição de Liskov 
 
@@ -172,14 +172,22 @@ Suponha que as subclasses B1, B2, …., Bn redefinam o método g() de A, que é 
 LEITURA CAPÍTULO 6
 6 Padrões de Projeto
 
-
-
-
   
   Dependency 
+ _____________________________________________________________________________________
+  **Aula - 25/08**
+
+  Padrões de Projeto - Implementação Observer
+
+
+  Observer é um padrão de design comportamental que permite definir um mecanismo de assinatura para notificar vários objetos sobre quaisquer eventos que aconteçam com o objeto que eles estão observando.
+  O objeto que possui algum estado interessante é frequentemente chamado de sujeito , mas como ele também notificará outros objetos sobre as alterações em seu estado, o chamaremos de publicador . Todos os outros objetos que desejam rastrear alterações no estado do publicador são chamados de assinantes .
+  O padrão Observer sugere que você adicione um mecanismo de assinatura à classe publicadora para que objetos individuais possam assinar ou cancelar a assinatura de um fluxo de eventos provenientes dessa publicadora.  Na realidade, esse mecanismo consiste em 1) um campo de array para armazenar uma lista de referências a objetos assinantes e 2) vários métodos públicos que permitem adicionar e remover assinantes dessa lista.
+sempre que um evento importante acontece com o publicador, ele acessa seus assinantes e chama o método de notificação específico em seus objetos.
+O publicador notifica os assinantes chamando o método de notificação específico em seus objetos.
 
   _____________________________________________________________________________________
-  Aula - 26/08
+  **Aula - 26/08**
 
   Livro Fundamentos da arquitetura de software: uma abordagem de engenharia
 
@@ -212,7 +220,7 @@ Capacidade de aprendizagem: Sistema que pode evoluir ou se adaptar com base em d
   Boas práticas que orientam a criação de sistemas, como modularidade, simplicidade, reutilização, separação de responsabilidades, e clareza. Aplicá-los ajuda a ter sistemas mais fáceis de entender, manter e evoluir.
 
 ________________________________________________________________________________________________________
-Aula 01/09
+**Aula 01/09**
 
 CARACTERÍSTICAS DA ARQUITETURA = Requisitos NÃO funcionais
 
@@ -266,11 +274,6 @@ IMPLANTAR
 INTEGRAÇÃO CONTÍNUA
 
 
-
-
-
-
-
   Tomar decisões de arquitetura
       Orientação
       Não especificar as escolhas da tecnologia.
@@ -287,25 +290,71 @@ INTEGRAÇÃO CONTÍNUA
   Ter habilidades interpessoais
   Entender e lidar bem com questões políticas
 
-
+DevOps? =
+A contratação de "Dev" e "Ops" refere-se à substituição de operações e desenvolvimento em silos.
 ____________________________________________________________________________________________
-Aula 02/09
+**Aula 02/09**
 Resumo Capítulo 2: Pensamnento Arquitetônico
+Resuma a diferençca entre: Arquitetura e Design
+Como é a formação do conhecimento de um arquiteto modelo T?
+
+Pensamento arquitetônico é  ver as coisas com os olhos da arquitetura. Pensar como arquiteto envolve quatro aspectos principais:
+  Entender a diferença entre arquitetura e design, saber como colaborar com as equipes de desenvolvimento para a arquitetura funcionar.     Ter uma grande variedade de conhecimento técnico e ainda manter certo nível de profundidade técnica, permitindo que o arquiteto veja soluções e possibilidades que os outros não veem. 
+  Terceiro, é entender, analisar e reconciliar os trade-offs entre várias soluções e tecnologias. 
+  Entender a importância das motivações comerciais e como elas se traduzem em preocupações arquitetônicas.
+
+Arquitetura x Design:
+
+Um arquiteto é responsável por analisar os requisitos comerciais para extrair e definir as características da arquitetura, selecionar quais padrões e estilos da arquitetura se encaixariam no domínio do problema e criar componentes . Então os artefatos criados a partir dessas atividades são passados para a equipe de desenvolvimento, responsável por criar diagramas de classes para cada componente, criar telas de interface do usuário e desenvolver e testar o código-fonte.
+
+ARQUITETO > CARACTERÍSTICAS DAS ARQUITETURAS                                > DESIGN DA CLASSE
+          > ESTILO                                    > DESENVOLVEDOR       > INTERFACE DO USUÁRIO
+          > ESTRUTURA DO COMPONENTE                                         > CÓDIGO FONTE
 
 
+**Amplitude Técnica**
+O escopo dos detalhes técnicos difere entre desenvolvedores e arquitetos. Diferentemente de um desenvolvedor, que deve ter bastante profundidade técnica para realizar seu trabalho, um arquiteto de software deve ter uma grande amplitude técnica para pensar como arquiteto e ver as coisas de um ponto de vista da arquitetura. 
+Diferimos o conhecimento em três seções: o que você sabe, o que você sabe que não sabe e o que você não sabe que não sabe.
+
+
+A formação do arquiteto modelo T é estruturada em dois eixos:
+
+Eixo horizontal (o traço do T): representa a amplitude de conhecimentos. O arquiteto possui uma visão generalista, entendendo de várias áreas relacionadas à arquitetura (como gestão, metodologias ágeis, negócios, segurança, infraestrutura, usabilidade, etc.). Isso permite comunicação e colaboração com diferentes equipes.
+
+Eixo vertical (a base do T): representa a profundidade em uma área específica. O arquiteto tem domínio técnico mais aprofundado em um ou poucos campos centrais (por exemplo, arquitetura de software, banco de dados, nuvem, integração de sistemas).
+
+
+Em geral o arquiteto modelo T é formado para ter visão ampla e generalista, mas com especialização profunda em um campo específico, unindo capacidade de dialogar com diferentes áreas e, ao mesmo tempo, expertise sólida em sua especialidade. Como arquiteto, amplitude é mais importante do que profundidade
+
+Os arquitetos devem focar a amplitude técnica para que tenham uma aljava maior a partir da qual tiram suas flechas. Os desenvolvedores que fazem a transição para a função de arquiteto talvez precisem mudar o modo como veem a aquisição de conhecimento. Equilibrar seu portfólio de conhecimento em relação à profundidade versus amplitude é algo que todo desenvolvedor deve considerar durante sua carreira.
+Pensar como arquiteto é ver os trade-offs em toda solução, técnica ou outra, e analisá-las para determinar qual é a melhor solução.
 
 _________________________________________________________________________________________
-Aula 08/09
+**Aula 08/09**
 Resumo: Analisando Trade - Offs
 
+Analisando os Trade-offs
+Pensar como arquiteto é ver os trade-offs em toda solução, técnica ou outra, e analisá-las para determinar qual é a melhor solução.
+Tudo na arquitetura é um trade-off. Não existe resposta certa nem errada na arquitetura, apenas trade-offs..
+O pensamento arquitetural requer que o arquiteto analise os trade-offs a cada opção e selecione a melhor, dada a situação específica.
 
+A clara vantagem  para o problema  é a extensabilidade arquitetural. O serviço Quem dá o lance requer apenas uma conexão com um tópico, diferentemente da solução de fila na Figura 2-9, em que Quem dá o lance precisa conectar três filas diferentes.
+
+ ponto aqui é que usar filas requer uma mudança significativa no sistema ao adicionar a nova funcionalidade de lances; já na abordagem de tópicos, nenhuma mudança é necessária na infraestrutura existente.
+ Os programadores conhecem os benefícios de tudo e os trade-offs de nada. Os arquitetos precisam entender ambos.
+
+ Pensar de modo arquitetural é ver os benefícios de certa solução, mas também analisar os lados negativos, ou os trade-offs, associados a uma solução. Continuando com o exemplo do sistema de leilão, um arquiteto de software analisaria os lados negativos da solução de tópico. 
+
+ Note que esse trade-off é específico da tecnologia em que o Protocolo Avançado de Enfileiramento de Mensagens (AMQP) pode suportar o equilíbrio da carga programática e o monitoramento por causa da separação entre uma troca (o que aquele que dá o lance envia) e uma fila (o que o consumidor ouve).
+
+ A questão aqui é que tudo na arquitetura de software tem um trade-off: escolher entre uma vantagem e uma desvantagem. Pensar como arquiteto é analisar esses trade-offs, então perguntar “qual é mais importante: extensão ou segurança?” A decisão entre as diferentes soluções sempre dependerá das motivações comerciais, do ambiente e de muitos outros fatores.
 _______________________________________________________________________________________
-Aula 09/09
+**Aula 09/09**
 Código
 
 
 _________________________________________________________________________________________
-Aula 15/09
+**Aula 15/09**
 
 Azure
 Publisher -> Broker <- Subscriber
@@ -319,9 +368,12 @@ https://portal.azure.com/#@univillebr.onmicrosoft.com/resource/subscriptions/4a7
 CÓDIGO
 
 __________________________________________________________________________________________
-Aula 16/09
+**Aula 16/09**
 
 CÓDIGO 
 
 ________________________________________________________________________________________
 22/09 - prova 1
+
+_____________________________________________________________________________________________
+23/09 
