@@ -377,3 +377,34 @@ ________________________________________________________________________________
 
 _____________________________________________________________________________________________
 23/09 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________   _ ________________________________________  
+2 BIMESTRE
+
+https://learn.microsoft.com/pt-br/azure/architecture/patterns/circuit-breaker?wt.mc_id=AZ-MVP-5003638
+
+CIRCUIT BREAK
+Função = Proteger a comunicação entre sistemas.
+
+DIJUNTOR:
+ESTADO FECHADO = tudo dando certo
+ESTADO DE ABERTO - aconteceu uma falha, erro, algum problema
+ESTADO MEIO ABERTO = half open = de tempos em tempos ele vai pro meio aberto, pra ver se fecha ou se precisa voltar pro aberto
+
