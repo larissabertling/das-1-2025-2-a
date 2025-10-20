@@ -396,15 +396,203 @@ ________________________________________________________________________________
 
 
 _________________________________________________   _ ________________________________________  
-2 BIMESTRE
+**2 BIMESTRE**
+**29/09**
 
 https://learn.microsoft.com/pt-br/azure/architecture/patterns/circuit-breaker?wt.mc_id=AZ-MVP-5003638
 
 CIRCUIT BREAK
 Função = Proteger a comunicação entre sistemas.
 
+O padrão Circuit Breaker ajuda a lidar com falhas que podem levar períodos variados para serem recuperadas quando um aplicativo se conecta a um serviço ou recurso remoto. 
+O padrão Circuit Breaker ajuda a evitar que um aplicativo tente executar repetidamente uma operação com probabilidade de falha. 
+Esse padrão permite que o aplicativo continue em execução sem esperar que a falha seja corrigida ou desperdiçar ciclos de CPU para determinar que a falha é persistente. O padrão Circuit Breaker também permite que um aplicativo detecte quando a falha é resolvida. Se a falha for resolvida, o aplicativo pode tentar invocar a operação novamente.
+
 DIJUNTOR:
 ESTADO FECHADO = tudo dando certo
 ESTADO DE ABERTO - aconteceu uma falha, erro, algum problema
 ESTADO MEIO ABERTO = half open = de tempos em tempos ele vai pro meio aberto, pra ver se fecha ou se precisa voltar pro aberto
+
+**Fechado**: A solicitação do aplicativo é roteada para a operação. O proxy mantém uma contagem do número de falhas recentes. Se a chamada para a operação não for bem-sucedida, o proxy incrementa essa contagem. 
+Se o número de falhas recentes exceder um limite especificado dentro de um determinado período, o proxy é colocado no estado **Aberto** e inicia um temporizador de tempo limite. Quando o temporizador expira, o proxy é colocado no estado **Meio Aberto** .
+
+**Aberto**: A solicitação do aplicativo falha imediatamente e uma exceção é retornada ao aplicativo.
+
+**Meio-Aberto**: Um número limitado de solicitações da aplicação pode passar e invocar a operação. Se essas solicitações forem bem-sucedidas, o disjuntor assume que a falha que causou a falha foi corrigida e o disjuntor comuta para o estado Fechado . O contador de falhas é zerado. Se alguma solicitação falhar, o disjuntor assume que a falha ainda está presente e, portanto, retorna ao estado Aberto . Ele reinicia o temporizador de tempo limite para que o sistema possa se recuperar da falha.
+
+O contador de falhas para o estado Fechado é baseado em tempo. Ele é reiniciado automaticamente em intervalos periódicos. Este projeto ajuda a evitar que o disjuntor entre no estado Aberto caso apresente falhas ocasionais. O limite de falha aciona o estado Aberto somente quando um número especificado de falhas ocorre durante um intervalo especificado.
+
+O contador de sucessos para o estado Meio Aberto registra o número de tentativas bem-sucedidas de invocação da operação. O disjuntor retorna ao estado Fechado após um número especificado de invocações consecutivas bem-sucedidas. Se alguma invocação falhar, o disjuntor entra no estado Aberto imediatamente e o contador de sucessos é zerado na próxima vez que entrar no estado Meio Aberto .
+
+
+Um disjuntor bloqueia temporariamente o acesso a um serviço com defeito após detectar falhas. Essa ação evita tentativas repetidas sem sucesso, permitindo que o sistema se recupere com eficácia. Esse padrão pode melhorar a estabilidade e a resiliência de um aplicativo.
+
+Para ajudar a gerenciar essas falhas, você deve projetar um aplicativo em nuvem para usar uma estratégia, como o padrão Retry .
+
+
+RETRY x CIRCUIT BREAK
+
+O padrão Circuit Breaker tem uma finalidade diferente do padrão Retry. O padrão Retry permite que um aplicativo tente novamente uma operação com a expectativa de que ela seja bem-sucedida. O padrão Circuit Breaker impede que um aplicativo execute uma operação com probabilidade de falha. Um aplicativo pode combinar esses dois padrões usando o padrão Retry para invocar uma operação por meio de um disjuntor. No entanto, a lógica de repetição deve ser sensível a quaisquer exceções retornadas pelo disjuntor e interromper as tentativas de repetição se o disjuntor indicar que a falha não é transitória.
+
+
+PROBLEMAS:
+Tratamento de exceções: O aplicativo deve lidar com falhas quando o disjuntor bloquear uma operação — reduzindo funções, tentando alternativas ou avisando o usuário.
+
+Tipos de exceções: O disjuntor pode ajustar sua resposta conforme o tipo de falha (ex.: tempo limite ou serviço indisponível).
+
+Monitoramento: É essencial registrar falhas e sucessos para avaliar a saúde do sistema.
+
+Recuperabilidade: O tempo de reabertura do disjuntor deve seguir o padrão de recuperação da operação, evitando erros ou instabilidade.
+
+Teste de falhas: O disjuntor pode testar periodicamente o serviço (ping) antes de voltar ao estado normal.
+
+Substituição manual: Administradores devem poder reabrir ou fechar o disjuntor manualmente em casos especiais.
+
+Concorrência: O disjuntor deve suportar múltiplas instâncias sem causar bloqueios ou lentidão.
+
+Diferenciação de recursos: Evite usar um único disjuntor para vários provedores — falhas isoladas podem afetar recursos saudáveis.
+
+Interrupção acelerada: Se a resposta indicar falha prolongada, o disjuntor pode permanecer aberto por tempo mínimo antes de tentar novamente.
+
+Implantações multirregionais: Use disjuntores com reconhecimento de região e balanceamento global para garantir failover e desempenho.
+
+Malha de serviço: Disjuntores podem ser implementados no código da aplicação ou como recurso da malha de serviço.
+
+Repetição de solicitações: O disjuntor pode registrar solicitações falhas e reenviá-las quando o serviço voltar.
+
+Tempos limite longos: Tempos limite altos em serviços externos podem bloquear threads e reduzir a proteção do disjuntor.
+
+Adaptabilidade: Disjuntores devem se ajustar a diferentes ambientes (serverless, contêineres etc.) para manter a resiliência.
+
+
+Quando usar:
+
+Para evitar falhas em cascata e limitar chamadas a serviços remotos com falha.
+Para redirecionar tráfego com base em falhas em tempo real e aumentar a resiliência multirregional.
+Para proteger contra serviços lentos e manter o desempenho.
+Para lidar com problemas intermitentes de conectividade em sistemas distribuídos.
+
+Quando não usar:
+
+Em recursos locais na memória, onde o disjuntor gera sobrecarga desnecessária.
+Como substituto do tratamento de exceções da lógica de negócio.
+Quando algoritmos de repetição já resolvem o problema.
+Se o tempo de reinício do disjuntor causar atrasos inaceitáveis.
+Em arquiteturas baseadas em mensagens que já têm filas de falha e isolamento nativo.
+Quando a recuperação é feita pela própria infraestrutura (como balanceadores ou malhas de serviço).
+
+++ IMPLEMENTAÇÃO
+____________________________________________________________________________________________________________
+AULA 30/09
+
+IMPLEMENTAÇÃO
+
+
+_________________________________________________________________________________________________________
+AULA 06/10
+
+Solução de software: auditoria > desempenho > segurança > requisitos > dados > legalidade > escalabilidade
+
+Uma característica da arquitetura atende a três critérios:
+
+- Especifica uma consideração de design fora do domínio
+- Influencia algum aspecto estrutural de design
+- É essencial ou importante para o sucesso da aplicação
+
+Características da arquitetura são considerações de design que vão além dos requisitos funcionais — definem como o sistema deve funcionar e por que certas escolhas são feitas (ex.: desempenho, segurança, confiabilidade).
+
+Elas influenciam o design estrutural da aplicação. Por exemplo:
+Se o pagamento é feito por um serviço terceirizado → medidas padrão de segurança bastam.
+Se o sistema processa pagamentos internamente → exige um módulo específico e maior isolamento de segurança.
+Nem todas as características merecem foco: cada uma adiciona complexidade, então o arquiteto deve priorizar as essenciais para o sucesso do sistema.
+Há características explícitas (descritas nos requisitos) e implícitas (como disponibilidade e segurança, que são esperadas mesmo sem estarem documentadas).
+Esses elementos se interligam e exigem equilíbrio (trade-offs) no design da arquitetura.
+
+CARACTERÍSTICAS OPERACIONAIS DA ARQUITETURA:
+    As características operacionais da arquitetura têm uma sopreposição significativa com as preocupações de operações e DevOps, formando     a interseção dessas questões em muitos projetos de software.
+
+- Disponibilidade: Por quanto tempo o sistema precisa ficar disponível (se for 24/7, é preciso ter etapas para permitir que o sistema fique ativo rápido no caso de qualquer falha).
+- Continuidade:	Capacidade de recuperação de desastres.
+- Desempenho:	Inclui teste de estresse, análise de pico, análise da frequência das funções usadas, capacidade requerida e tempos de resposta. Por vezes, a aceitação do desempenho requer um exercício próprio, levando meses para concluir.
+- Recuperabilidade:	Requisitos de continuidade do negócio (por exemplo, no caso de desastres, com que rapidez o sistema precisa ficar online de novo?). Isso afetará a estratégia de backup e os requisitos para o hardware duplicado.
+- Confiabilidade/ segurança:	Avalia se o sistema precisa ser à prova de falhas ou se tem uma missão crítica no modo como afeta a vida das pessoas. Se ele falha, custará muito dinheiro para a empresa?
+- Robustez:	A capacidade de lidar com condições de erro e limites durante a execução, caso a conexão de internet caia ou se há falta de energia ou falha no hardware.
+- Escalabilidade:	A capacidade de o sistema rodar e operar quando o número de usuários ou requisições aumenta.
+
+CARACTERÍSTICAS ESTRUTURAIS DA ARQUITETURA:
+    Os arquitetos devem se preocupar com a estrutura do código. Em muitos casos, o arquiteto tem uma responsabilidade única ou                 compartilhada pelas questões de qualidade do código, como boa modularidade, acoplamento controlado entre os componentes, código           legível e muitas outras avaliações internas da qualidade. O Quadro 4-2 lista algumas características estruturais da arquitetura.
+
+
+- Configuração:	A capacidade dos usuários finais de mudar com facilidade os aspectos de configuração do software (com interfaces úteis).
+- Extensão:	Como é importante ligar as novas partes da funcionalidade.
+- Instabilidade: Facilidade de instalação do sistema em todas as plataformas necessárias.
+- Aproveitamento/ reutilização:	Capacidade de aproveitar os componentes comuns em vários produtos.
+- Localização: 	Suporte para vários idiomas nas telas de entrada/consulta nos campos de dados; nos relatórios, requisitos de caracteres multibytes e unidades de medidas ou moedas.
+- Manutenção:	Quão facilmente aplica as alterações e melhora o sistema?
+- Portabilidade: 	O sistema precisa rodar em mais de uma plataforma? (Por exemplo, o front-end precisa rodar no Oracle e no banco de dados SAP?)
+- Suporte: 	De qual nível de suporte técnico a aplicação precisa? Qual nível de registro e outras facilidades são requeridos para depurar os erros no sistema?
+- Atualização: 	A capacidade de atualizar com facilidade/rapidez uma versão prévia dessa aplicação/solução para uma versão mais nova nos servidores e nos clientes.
+
+CARACTERÍSTICAS TRANSVERSAIS DA ARQUITETURA:
+  Embora muitas características da arquitetura se classifiquem em categorias fáceis de reconhecer, muitas estão fora ou desafiam a           categorização, formando importantes restrições de design e considerações. O Quadro 4-3 descreve algumas.
+
+  - Acessibilidade:	Acesso a todos os usuários, inclusive com deficiências, como daltonismo e perda auditiva.
+-  Armazenamento:	Os dados precisarão ser armazenados ou excluídos após um período de tempo? (Por exemplo, as contas do cliente serão excluídas após três meses ou marcadas como obsoletas e armazenadas em um banco de dados secundário para futuro acesso.)
+- Autenticação: 	Requisitos de segurança para assegurar que os usuários são quem dizem ser.
+- Autorização:	Requisitos de segurança para assegurar que os usuários possam acessar apenas certas funções na aplicação (por caso de uso, subsistema, página web, regra comercial, nível do campo etc.).
+- Legalidade:	Com quais restrições legais o sistema opera (proteção de dados, Sarbanes Oxley, GDPR etc.)? Quais direitos de reserva a empresa requer? Alguma regulação no modo como a aplicação será criada ou implantada?
+- Privacidade: 	A capacidade de ocultar as transações dos funcionários internos da empresa (transações criptografadas para que até os DBAs e os arquitetos de rede não possam vê-las).
+- Segurança: 	Os dados precisam ser criptografados no banco de dados? Criptografados para a comunicação de rede entre os sistemas internos? Qual tipo de autenticação precisa existir para o acesso remoto do usuário?
+ - Suporte:	De qual nível de suporte técnico a aplicação precisa? Qual nível de registro e outras facilidades são necessários para depurar os erros no sistema?
+
+
+A ISO define um conjunto de características de qualidade de software, organizadas por categorias — embora a lista não seja completa.
+
+Principais características:
+
+- Eficiência do desempenho: mede o uso de recursos e tempo de resposta do sistema.
+- Compatibilidade: capacidade de coexistir e trocar informações com outros sistemas.
+- Usabilidade: facilidade de uso, aprendizado, proteção contra erros e acessibilidade.
+- Confiabilidade: funcionamento contínuo e recuperação após falhas.
+- Segurança: proteção de dados e controle de acesso (confidencialidade, integridade, autenticidade etc.).
+- Manutenibilidade: facilidade para modificar, testar e reutilizar o software.
+- Portabilidade: facilidade para transferir o software entre ambientes ou plataformas.
+
+A adequação funcional, embora listada pela ISO, não é considerada uma característica da arquitetura, e sim um requisito funcional — pois descreve o que o sistema faz, não como ele é projetado.
+
+
+__________________________________________________________________________________________________
+AULA 07/10
+
+**Padrão CQRS (Command Query Responsibility Segregation)**:
+Separa as operações de leitura (consulta) e gravação (comando) em modelos de dados distintos, permitindo otimização independente para melhor desempenho, escalabilidade e segurança.
+
+<img width="349" height="200" alt="image" src="https://github.com/user-attachments/assets/2bc8ded4-f8e1-4fbd-881b-7e1f185d9fd0" />
+
+Desafio:
+Em sistemas grandes, o mesmo modelo para leitura e gravação causa problemas de desempenho, bloqueio, segurança e complexidade, pois as operações têm requisitos diferentes.
+
+Principais problemas:
+
+- Diferença entre os dados usados para leitura e gravação.
+- Contenção de bloqueio em acessos simultâneos.
+- Quedas de desempenho por consultas complexas.
+- Riscos de segurança ao misturar funções de leitura e escrita.
+
+Solução (CQRS):
+Separar comandos (gravação) e consultas (leitura) em modelos distintos.
+
+    Comandos: representam ações de negócio (ex.: Reservar quarto), e não simples atualizações de dados.
+    Consultas: apenas leem informações, retornando DTOs (objetos de transferência de dados) sem lógica de domínio.
+
+Essa separação traz clareza, melhor desempenho e organização ao sistema.
+
+Separar modelos de leitura e gravação:
+Dividir os modelos de leitura e gravação simplifica o design, aumenta a clareza, desempenho e escalabilidade.
+
+Desvantagem:
+Ferramentas automáticas (como O/RM) não geram código CQRS automaticamente — é preciso criar lógica personalizada para manter os modelos sincronizados e consistentes.
+
+Implementação:
+Existem duas abordagens principais para separar esses modelos, cada uma com seus próprios desafios de sincronização e consistência.
 
