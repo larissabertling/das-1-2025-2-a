@@ -1356,5 +1356,1029 @@ Exemplo do Estilo de Arquitetura Pipeline
     Tempo de inicialização pode variar de 2 min (apps menores) até 15+ min (apps grandes).
 
 _________________________________________________________________________________________________________
+Aula 03.11 e 04.11
+
+CAPÍTULO 12 = Estilo de Arquitetura Microkernel
+
+**Visão Geral**
+    O estilo de arquitetura Microkernel, também chamado de arquitetura de plug-ins, existe há décadas e continua extremamente atual.
+    Ele é ideal para:
+      Aplicações baseadas em produto, que são empacotadas e instaladas no cliente (ex.: IDEs, ferramentas de BI, antivírus).
+      Aplicações corporativas personalizadas, que precisam ser altamente extensíveis e adaptáveis sem alterar o núcleo.
+    
+    A principal característica é: um núcleo mínimo + funcionalidades externas adicionadas via plug-ins.
+
+**Topologia**
+  A arquitetura microkernel é monolítica, porém com divisão clara entre:
+    
+    1. Sistema Central (Microkernel)
+    Contém o conjunto mínimo de funcionalidades essenciais para o sistema funcionar.
+    Geralmente inclui: gerenciamento de plug-ins, lógica básica e invariável, mecanismos de comunicação, serviços comuns
+
+    2. Plug-ins
+    São componentes independentes, instaláveis e removíveis.
+    Isolam funcionalidades específicas e regras personalizadas.
+    Podem ser: extensões, módulos de negócio, adaptadores para clientes, recursos opcionais
+
+Sistema Central
+
+É a funcionalidade mínima necessária para o sistema funcionar.
+
+Exemplo: Eclipse → sistema central é apenas um editor de texto simples; plug-ins tornam o IDE útil.
+
+Também pode ser entendido como o fluxo “caminho feliz” da aplicação, sem personalizações complexas.
+
+Benefícios de manter o sistema central simples
+
+Redução da complexidade ciclomática.
+
+Facilidade de extensão e manutenção.
+
+Maior testabilidade.
+
+Separação de regras específicas dos clientes ou casos especiais.
+
+Uso de Plug-ins
+
+Regras específicas e complexas ficam isoladas em componentes de plug-in.
+
+Exemplo: aplicação de reciclagem de dispositivos eletrônicos → cada tipo de dispositivo tem um plug-in próprio.
+
+Adicionar novo comportamento = criar um novo plug-in + registrar.
+
+O sistema central apenas:
+
+Localiza os plug-ins corretos.
+
+Chama sua execução de forma genérica.
+
+Organização do Sistema Central
+
+Pode ser:
+
+Uma arquitetura em camadas.
+
+Um bloco monolítico modular.
+
+Dividido em serviços de domínio separados (cada um com seus plug-ins).
+
+Exemplo de serviços de domínio
+
+Serviço central: Payment Processing.
+
+Cada método de pagamento → um plug-in independente (cartão, PayPal, crédito na loja, etc.).
+
+Banco de Dados
+
+Geralmente, a aplicação inteira (mesmo com plug-ins) compartilha um único banco de dados.
+
+Camada de apresentação
+
+A camada de apresentação pode:
+
+Estar incorporada ao sistema central, ou
+
+Ser uma interface de usuário separada (o sistema central fornece back-end).
+
+A interface separada também pode seguir o estilo microkernel (variações mostradas nas figuras citadas).
+
+Componentes de plug-in — características gerais
+
+São autônomos e independentes; contêm processamento especializado e código personalizado.
+
+Isolam código volátil, melhorando manutenção e testabilidade.
+
+Idealmente sem dependências entre plug-ins.
+
+Comunicação plug-in ↔ sistema central
+
+Normalmente ponto a ponto: chamada de método/função para o ponto de entrada do plug-in.
+
+Dois modelos de implantação:
+
+Tempo de execução: plug-ins podem ser adicionados/removidos sem redeploy; gerenciados por frameworks (ex.: OSGi, Jigsaw, Prism).
+
+Compilação: mais simples, mas exige redeploy da aplicação inteira para mudanças.
+
+Formas de implementação
+
+Bibliotecas compartilhadas (JAR, DLL, Gem) — plug-in como artefato separado.
+
+Namespaces / pacotes no mesmo código — ex.: app.plugin.<domínio>.<contexto> (recomendado para organização).
+
+Exemplo: app.plugin.assessment.iphone6s.
+
+Plug-ins remotos (REST / mensageria / microsserviços)
+
+Alternativa: cada plug-in é um serviço independente acessado via REST ou mensageria.
+
+Benefícios:
+
+Maior desacoplamento, escalabilidade e throughput.
+
+Permite alterações em execução sem frameworks especializados.
+
+Suporta comunicação assíncrona (melhora resposta ao usuário).
+
+Trade-offs / desvantagens:
+
+Torna a arquitetura distribuída (mais complexa de implantar).
+
+Aumenta custo e complexidade operacional.
+
+Se um plug-in remoto ficar sem resposta (ex.: REST), a requisição pode falhar — problema menor em implementação monolítica.
+
+Padrão de acesso ao banco de dados
+
+Não é comum que plug-ins acessem diretamente um banco de dados compartilhado.
+
+Responsabilidade do sistema central: acessar o DB e repassar dados aos plug-ins (maior desacoplamento).
+
+Plug-ins podem ter seu próprio armazenamento (local ou externo) para dados específicos:
+
+Ex.: cada plug-in de avaliação na aplicação de reciclagem pode ter um banco simples ou mecanismo de regras.
+
+Esse armazenamento pode ser externo ou embutido (em memória, embutido, etc.).
+
+Exemplo recorrente (aplicação de reciclagem de eletrônicos)
+
+Cada tipo de dispositivo → plug-in separado (JAR/DLL/nome de namespace).
+
+Sistema central localiza e chama plug-ins; plug-ins contêm regras específicas de avaliação.
+
+Possibilidade de implementar plug-ins como serviços remotos para avaliação assíncrona e notificação posterior.
+
+1. Registro de Plug-ins
+
+O sistema central precisa saber:
+
+Quais plug-ins existem
+
+Como acessá-los
+
+Para isso, utiliza um registro de plug-ins.
+
+Finalidade do registro
+
+Armazena informações de cada plug-in, como:
+
+Nome
+
+Contrato de dados
+
+Protocolo de acesso (ponto a ponto, mensageria, REST, etc.)
+
+Complexidade do registro
+
+Pode variar:
+
+Simples: mapa interno com chave → referência do plug-in.
+
+Complexo: ferramentas externas de descoberta e registro
+
+Ex.: Apache ZooKeeper, Consul.
+
+Exemplo
+
+Plug-in “AuditChecker”:
+
+Nome do serviço
+
+Dados de entrada/saída
+
+Formato do contrato (ex.: XML)
+
+Registro na aplicação de reciclagem
+
+Código Java exemplifica:
+
+Registro ponto a ponto
+
+Registro via mensageria
+
+Registro REST para avaliar um iPhone 6S
+
+2. Contratos de Plug-in
+
+Definem como o plug-in se comunica com o sistema central.
+
+Padronizam:
+
+Comportamentos
+
+Tipos de entrada e saída
+
+Estrutura dos dados retornados
+
+Quando contratos personalizados são necessários
+
+Quando plug-ins são desenvolvidos por terceiros.
+
+Cria-se um adaptador para:
+
+Transformar o contrato externo → contrato padrão interno
+
+Evitar lógica especial para cada plug-in no sistema central
+
+Formatos de contrato
+
+Podem ser:
+
+XML
+
+JSON
+
+Objetos transferidos diretamente
+
+3. Exemplo do contrato (caso da reciclagem de eletrônicos)
+Interface AssessmentPlugin
+
+Define métodos padrão:
+
+assess()
+
+register()
+
+deregister()
+
+Objeto de saída AssessmentOutput contém:
+
+assessmentReport (string formatada com relatório)
+
+revendaPossível (boolean)
+
+valorCalculado do item
+
+preço de revenda recomendado
+
+Importante:
+
+O plug-in é responsável por:
+
+Criar e formatar o relatório de avaliação
+
+O sistema central apenas:
+
+Exibe ou imprime o relatório
+
+Não entende a lógica interna do relatório
+
+1. Exemplos de uso do Microkernel
+
+Muito comum em produtos de software:
+
+IDEs como Eclipse, PMD
+
+Ferramentas como Jira e Jenkins
+
+Navegadores como Chrome e Firefox
+
+Funcionalidades extras adicionadas por plug-ins
+
+Adequado também para grandes aplicações de negócio
+
+2. Caso de uso: Processamento de Sinistros (Seguradoras)
+
+Processo extremamente complexo e variável:
+
+Cada jurisdição possui regras próprias
+
+Exemplos: substituição gratuita do para-brisa em alguns Estados
+
+Problemas comuns:
+
+Mecanismos de regras muito grandes → difíceis de alterar
+
+Pequenas mudanças exigem muito retrabalho e testes
+
+Solução com microkernel:
+
+Criar um plug-in por jurisdição
+
+Regras específicas isoladas
+
+Alterações ou adições de jurisdições sem impactar o restante
+
+Sistema central = fluxo padrão de abertura e processamento do sinistro
+
+3. Caso de uso: Software de Imposto de Renda (ex.: formulário 1040 dos EUA)
+
+Formulário 1040 é o sistema central (fluxo geral)
+
+Cada linha do formulário exige cálculos detalhados → outros formulários/planilhas
+
+Cada formulário adicional pode ser um plug-in independente
+
+Facilita:
+
+Alterar apenas o plug-in afetado por mudanças na lei
+
+Adicionar ou remover formulários sem impacto no restante
+
+4. Classificação das características do Microkernel (Figura 12-8)
+
+(1 estrela = fraco; 5 estrelas = forte)
+
+Pontos fortes (4–5 estrelas):
+
+Simplicidade
+
+Custo geral baixo
+
+Boa modularidade
+
+Boa extensibilidade
+
+Pontos médios (3 estrelas):
+
+Testabilidade
+
+Implementabilidade
+
+Confiabilidade
+
+Porque funcionalidades ficam isoladas em plug-ins
+
+Pontos fracos (1–2 estrelas):
+
+Escalabilidade
+
+Tolerância a falhas
+
+Elasticidade
+
+Principalmente devido ao fato de a maioria das implementações ser monolítica
+
+Toda requisição sempre passa pelo sistema central (quantum = 1)
+
+5. Particularidades do estilo Microkernel
+Particionamento
+
+Pode ser particionado:
+
+Tecnicamente (mais comum)
+
+Por domínio (forte isomorfismo entre regras do negócio e plug-ins)
+
+Funciona especialmente bem quando:
+
+Cada cliente/localização precisa de configurações próprias
+
+Há forte necessidade de customização e extensão
+
+Exemplos: IDEs, Jira, softwares com muitas extensões
+
+Modularidade e Extensibilidade (3 estrelas)
+
+Plug-ins independentes e autocontidos permitem:
+
+Adicionar
+
+Remover
+
+Alterar funcionalidades com facilidade
+
+Facilitam responder rapidamente a mudanças
+
+6. Performance no Microkernel
+
+Classificação: 3 estrelas
+
+Motivos:
+
+Aplicações microkernel tendem a ser menores e menos infladas
+
+Sofrem menos com o antipadrão sinkhole architecture
+
+Melhorias possíveis:
+
+Desativar funcionalidades desnecessárias
+
+Exemplo: no Wildfly (antigo JBoss), desligar clustering, cache, mensageria → servidor mais rápido
+
+__________________________________________________________________________________________________________
+Aula 10.11 e 11.11
+
+**Capítulo 17: Arquitetura de Microsserviços**
+
+1. Introdução
+
+Microsserviços são um estilo de arquitetura muito popular nos últimos anos.
+
+Diferenciam-se por sua topologia e filosofia de desenvolvimento.
+
+2. História dos Microsserviços
+
+Diferente de outros estilos, o termo microsserviços surgiu antes de seu uso massivo.
+
+Popularizados por Martin Fowler e James Lewis no blog “Microservices” (2014).
+
+A postagem identificou características comuns e ajudou a consolidar o estilo na indústria.
+
+3. Influência do DDD (Domain-Driven Design)
+
+Microsserviços são fortemente inspirados pelo DDD.
+
+Principal conceito influente: Contexto Delimitado (Bounded Context).
+
+Representa uma forma de desacoplamento lógico e físico.
+
+Cada domínio possui suas próprias entidades, regras e até banco de dados.
+
+4. Comparação com Arquitetura Monolítica
+
+Em monolíticos:
+
+Domínios compartilham classes, tabelas, modelos e funcionalidades.
+
+Reutilização é comum → porém introduz acoplamento.
+
+Em microsserviços:
+
+Cada contexto delimitado funciona de forma independente.
+
+Não compartilha código, classes ou esquemas de banco de dados.
+
+Cada serviço define apenas o que precisa.
+
+5. Reutilização vs Desacoplamento
+
+Primeira Lei da Arquitetura de Software: tudo envolve trade-offs.
+
+Reutilização → aumenta acoplamento.
+
+Microsserviços priorizam desacoplamento máximo, mesmo que isso leve a:
+
+Duplicação de código
+
+Duplicação de modelos
+
+Independência total entre serviços
+
+6. Objetivo Principal dos Microsserviços
+
+Alto desacoplamento.
+
+A arquitetura implementa fisicamente a ideia de contextos delimitados do DDD.
+
+Cada microsserviço é um domínio próprio, autônomo e evolui sozinho.
+
+Visão Geral
+
+Microsserviços possuem tamanho reduzido, focados em uma única finalidade.
+
+Cada serviço contém tudo que precisa para funcionar sozinho, incluindo seu banco de dados.
+
+Arquitetura Distribuída
+
+Cada microsserviço roda em seu próprio processo (máquina física, VM ou contêiner).
+
+O desacoplamento extremo melhora:
+
+Isolamento
+
+Autonomia
+
+Independência operacional
+
+Tecnologias como nuvem e contêineres tornaram essa abordagem viável.
+
+Problemas Resolvidos pelo Isolamento
+
+Evita limitações comuns da infraestrutura multilocatária:
+
+Disputa por recursos (CPU, memória, rede, disco)
+
+Falta de isolamento entre aplicações
+
+Cada serviço possui sua própria infraestrutura virtualizada.
+
+Desafios de Performance
+
+Chamadas entre serviços são mais lentas que chamadas internas de métodos.
+
+Há overhead adicional por:
+
+Comunicação em rede
+
+Verificação de segurança em cada ponto
+
+Isso exige cuidado ao definir granularidade dos serviços.
+
+Transações Distribuídas
+
+Consideradas perigosas e devem ser evitadas.
+
+Transações que atravessam múltiplos serviços tornam o sistema frágil.
+
+Determinar a granularidade adequada dos serviços é essencial para o sucesso da arquitetura.
+
+Contexto Delimitado
+
+Filosofia central dos microsserviços.
+
+Cada serviço representa um domínio ou fluxo de trabalho completo.
+
+Cada serviço contém:
+
+Suas próprias classes
+
+Subcomponentes necessários
+
+Seu próprio esquema de banco de dados
+
+Preferência pela duplicação ao acoplamento — evita dependências compartilhadas.
+
+Microsserviços são a materialização física dos conceitos do Domain-Driven Design (DDD).
+
+Granularidade
+Problema comum
+
+Arquitetos tendem a criar serviços pequenos demais, exigindo muita comunicação entre eles.
+
+Frase importante
+
+“Microsserviço é um rótulo, não uma descrição.” — Martin Fowler
+
+Objetivo dos limites
+
+Delimitar serviços por domínio ou fluxo de trabalho.
+
+Nem todo domínio é pequeno – alguns requerem serviços maiores.
+
+Diretrizes para definir granularidade
+
+Finalidade
+
+Cada serviço deve ser muito coeso funcionalmente.
+
+Deve entregar um comportamento relevante dentro do sistema.
+
+Transações
+
+Entidades que participam juntas de uma transação indicam um limite natural.
+
+Como transações distribuídas são ruins, definir bem os limites evita esse problema.
+
+Coreografia
+
+Se vários serviços precisam conversar demais para funcionar, pode ser sinal de que deveriam ser agrupados em um serviço maior.
+
+Iteração é essencial
+
+Descobrir a granularidade correta geralmente exige várias revisões.
+
+Isolamento dos Dados
+
+Derivado do contexto delimitado: cada serviço deve ter seu próprio banco de dados.
+
+Evita:
+
+Acoplamento por esquemas compartilhados
+
+Pontos de integração fracos via BD único
+
+Atenção à armadilha da entidade
+
+Não modelar serviços simplesmente imitando tabelas do banco de dados.
+
+Fonte confiável e sincronização
+
+Ao abandonar o BD centralizado, o arquiteto precisa decidir:
+
+Qual domínio é a fonte confiável de um dado.
+
+Como os demais acessam essa informação:
+
+consulta ao domínio responsável
+
+replicação de dados
+
+cache
+
+Oportunidades trazidas pelo isolamento
+
+Cada serviço pode escolher o melhor tipo de armazenamento (SQL, NoSQL, chave-valor, etc.).
+
+Serviços podem mudar sua tecnologia interna sem impactar outros serviços.
+
+Maior flexibilidade e evolução independente.
+
+Camada da API
+
+É opcional na arquitetura de microsserviços.
+
+Usada para:
+
+Proxy
+
+Serviços de nomenclatura
+
+Indireção e facilidades operacionais
+
+Não deve ser usada como:
+
+Mediador
+
+Orquestrador
+
+Motivo:
+
+Orquestração deve ocorrer dentro dos contextos delimitados, não fora.
+
+Mediadores são típicos de arquiteturas particionadas tecnicamente, enquanto microsserviços são particionados por domínio.
+
+Reutilização Operacional
+
+Microsserviços preferem duplicação ao acoplamento, mas isso cria um desafio para áreas que se beneficiam de acoplamento:
+
+Monitoramento
+
+Logging
+
+Circuit breakers
+
+Nas antigas arquiteturas SOA, isso era centralizado e reutilizado ao máximo.
+
+Em microsserviços, a regra é separar preocupações de domínio das operacionais.
+
+Problema
+
+Se cada equipe implementar seu próprio monitoramento/log:
+
+Diferenças de qualidade
+
+Dificuldade de padronizar upgrades
+
+Manutenção complexa
+
+Padrão Sidecar
+
+Solução para reutilização operacional sem acoplamento funcional.
+
+Cada microsserviço tem um componente separado (sidecar) que cuida de:
+
+Monitoramento
+
+Logs
+
+Segurança
+
+Circuit breakers
+
+Configurações operacionais
+
+Atualizações são feitas apenas no sidecar, propagando automaticamente para todos os serviços.
+
+Malha de Serviços (Service Mesh)
+
+Conjunto de sidecars conectados, criando:
+
+Um plano de serviço unificado
+
+Controle operacional centralizado
+
+Benefícios:
+
+Monitoramento global
+
+Log unificado
+
+Segurança padronizada
+
+Observabilidade integrada
+
+Cada microsserviço aparece como um nó na malha.
+
+Console da Malha de Serviços
+
+Fornece:
+
+Visão operacional global
+
+Configuração centralizada
+
+Diagnóstico e gestão da infraestrutura distribuída
+
+Descoberta de Serviços
+
+Usada para permitir:
+
+Elasticidade
+
+Escalabilidade automática
+
+Requisições passam por um serviço de descoberta que:
+
+Identifica instâncias disponíveis
+
+Ativa novas instâncias conforme demanda
+
+Pode ser integrada à malha de serviços.
+
+Comumente hospedada na Camada da API, como ponto central onde:
+
+UI
+
+Outros sistemas
+
+Chamadores externos
+encontram os serviços disponíveis.
+
+
+Front-ends em Microsserviços
+1. Ideal Teórico
+
+A visão original dos microsserviços:
+
+A IU (Interface do Usuário) deveria fazer parte do contexto delimitado, seguindo o DDD.
+
+Na prática:
+
+Limites externos e restrições de aplicações web dificultam isso.
+
+2. Opções de Front-end
+A) IU Monolítica (mais comum) – Figura 17-5
+
+Um único front-end (web, desktop ou mobile).
+
+Ele consome vários microsserviços via camada de API.
+
+Estrutura típica em aplicações web modernas:
+
+React, Angular, Vue etc.
+
+B) Microfront-ends – Figura 17-6
+
+Cada microsserviço entrega sua própria parte da interface.
+
+O front-end principal coordena esses componentes.
+
+Benefícios:
+
+Alinhamento 1:1 entre limites do domínio de back-end e IUs.
+
+Equipes completamente independentes (back + front do seu domínio).
+
+Pode ser implementado com:
+
+Frameworks web baseados em componentes (ex: React).
+
+Frameworks open-source específicos para microfront-ends.
+
+Comunicação entre Microsserviços
+1. Escolha Principal
+
+Arquitetos precisam decidir entre:
+
+Comunicação síncrona (cliente espera resposta)
+
+Comunicação assíncrona (eventos/mensagens)
+
+2. Interoperabilidade Heterogênea com Reconhecimento de Protocolo
+Protocolo Reconhecido
+
+Microsserviços não têm um hub central.
+
+Por isso, precisam “saber” como falar entre si:
+
+REST
+
+Fila de mensagens
+
+RPC
+
+gRPC etc.
+
+Heterogênea
+
+Microsserviços podem usar diferentes linguagens e stacks.
+
+Cada serviço pode adotar a tecnologia mais adequada para seu domínio.
+
+Suporte total a ambientes poliglotas.
+
+Interoperabilidade
+
+Serviços trocam dados por rede.
+
+Mesmo evitando transações distribuídas, eles ainda precisam:
+
+Cooperar
+
+Consultar dados
+
+Enviar informações
+
+3. Heterogeneidade Forçada
+
+Estratégia usada para evitar acoplamento acidental.
+
+Exemplo: arquitetos obrigam times a usar stacks diferentes (Java, .NET, Python).
+
+Resultado:
+
+Zero compartilhamento acidental de classes.
+
+Cada equipe tem liberdade tecnológica real.
+
+4. Estratégia versus Governança Tradicional
+
+Governança corporativa tradicional:
+
+Padronizar tudo em uma única tecnologia.
+
+Microsserviços:
+
+Escolher a tecnologia certa para o problema certo.
+
+Evitar lentidão e restrições técnicas desnecessárias.
+
+Nem todo serviço precisa de BD relacional pesado.
+
+Comunicação Assíncrona
+
+Usada quando se deseja menor acoplamento.
+
+Baseada em:
+
+Eventos
+
+Mensagens
+
+Normalmente utiliza conceitos do capítulo de arquitetura baseada em eventos:
+
+Padrão Broker → Coreografia
+
+Padrão Mediador → Orquestração
+
+Coreografia
+
+Não possui coordenador central — segue o estilo EDA (event-driven architecture) com broker.
+
+Serviços comunicam-se diretamente entre si quando necessário.
+
+Mantém os serviços desacoplados, alinhado à filosofia de microsserviços.
+
+Exemplo:
+
+Serviço CustomerWishList chama CustomerDemographics para completar informações e retornar ao usuário.
+
+Benefícios:
+
+Alta independência entre serviços.
+
+Mapeamento natural ao conceito de contexto delimitado.
+
+Problemas/desafios:
+
+Coordenação complexa.
+
+Tratamento de erros mais difícil em fluxos distribuídos.
+
+Em casos complexos, um serviço pode virar um front controller, acumulando muitas responsabilidades — aumentando a complexidade.
+
+Orquestração
+
+Utiliza um mediador central responsável por coordenar chamadas entre serviços.
+
+Os desenvolvedores podem criar um serviço dedicado a essa coordenação.
+
+Exemplo:
+
+Serviço Report CustomerInformation coleta dados de vários outros serviços e retorna para o usuário.
+
+Benefícios:
+
+Centraliza e simplifica a coordenação.
+
+Facilita gerenciamento de workflows mais complexos.
+
+Desvantagens:
+
+Introduz maior acoplamento entre os serviços.
+
+Adequado quando os fluxos de domínio são naturalmente acoplados.
+
+Isomorfismo Domínio/Arquitetura
+
+A arquitetura deve refletir a forma do problema do domínio.
+
+Exemplos:
+
+Problemas que exigem customização → estilo microkernel é mais adequado.
+
+Microsserviços favorecem desacoplamento → naturalmente próximos ao estilo EDA.
+
+Trade-offs (Primeira Lei da Arquitetura)
+
+Nenhuma abordagem é perfeita.
+
+Coreografia → mais desacoplada, porém mais difícil de coordenar.
+
+Orquestração → mais simples de coordenar, porém mais acoplada.
+
+Problema das Transações em Microsserviços
+
+Microsserviços buscam desacoplamento extremo, inclusive no banco de dados.
+
+Isso inviabiliza a atomicidade típica de sistemas monolíticos.
+
+Criar transações distribuídas viola o princípio do desacoplamento.
+
+Também gera conascência de valor, o pior tipo de acoplamento dinâmico.
+
+Regra geral:
+→ Não faça transações entre microsserviços; ajuste a granularidade!
+
+Se transações entre serviços forem necessárias, pode indicar que os serviços estão granulares demais.
+
+Quando Transações Distribuídas São Necessárias
+
+Existem exceções: quando serviços realmente precisam ser separados, mas ainda devem se coordenar transacionalmente.
+
+Nesses casos existem padrões, porém com grandes trade-offs.
+
+Padrão Saga
+Como funciona
+
+Um serviço atua como mediador da transação.
+
+Chama cada serviço envolvido e registra sucesso ou falha.
+
+Se tudo der certo, todos os sistemas são atualizados.
+
+Fluxo normal (Figura 17-11)
+
+Mediador conduz a execução passo a passo.
+
+Todos os serviços atualizam seus bancos de forma sincronizada.
+
+Saga com Compensação (Figura 17-12)
+
+Se um passo falha, o mediador manda desfazer todas as operações anteriores.
+
+Métodos comuns:
+
+Estado pending até a confirmação final.
+
+Operações do e undo (undo geralmente mais difícil e trabalhoso).
+
+Problemas:
+
+Alta complexidade.
+
+Muito tráfego de coordenação.
+
+Desafios extras com requisições assíncronas.
+
+Recomendação
+
+Sagas devem ser usadas com moderação.
+
+Se a arquitetura depende demais de transações distribuídas, algo está errado com o design:
+
+Se transações virarem a regra, você errou na modelagem dos serviços.
+
+Classificação das Características da Arquitetura de Microsserviços
+Pontos Fortes
+
+Alta escalabilidade, elasticidade e capacidade evolutiva.
+
+Forte integração com práticas modernas:
+
+DevOps
+
+Automação
+
+Testes e deploy contínuo
+
+Alta tolerância a falhas (quando bem implementada com redundância e descoberta de serviços).
+
+Excelente alinhamento com domínio (arquitetura centrada no domínio).
+
+Suporta mudanças rápidas no negócio devido ao desacoplamento e unidades pequenas.
+
+Pontos Fracos
+
+Performance prejudicada por:
+
+Muitas chamadas de rede.
+
+Overhead de segurança a cada interação.
+
+Coreografia é preferida em microsserviços para reduzir gargalos.
+
+Complexidade maior por ser uma arquitetura distribuída.
+
+Filosofia Geral
+
+Microsserviços têm os quanta mais distintos (unidades menores de arquitetura).
+
+O desacoplamento extremo gera desafios, mas traz benefícios enormes.
+
+Arquitetos devem entender as regras para quebrá-las com inteligência.
+
+
 
 
