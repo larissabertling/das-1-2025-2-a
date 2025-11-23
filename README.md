@@ -1204,248 +1204,157 @@ Como mitigar?
 ______________________________________________________________________________________________
 AULA 27.10 e 28.10
 
-CAPITULO 11:
-
 Capítulo 11 – Estilo de Arquitetura Pipeline (Pipes-and-Filters)
+
 1. Conceito Geral
-
-Um dos estilos arquiteturais mais antigos e fundamentais.
-
-Também chamado de pipes-and-filters.
-
-Surge quando desenvolvedores começam a dividir funcionalidades em partes independentes.
-
-Muito conhecido por seu uso nos shells Unix (Bash, Zsh).
-
-Presente também em linguagens funcionais e frameworks como MapReduce.
+    Um dos estilos arquiteturais mais antigos e fundamentais.
+    Também chamado de pipes-and-filters.
+    Surge quando desenvolvedores começam a dividir funcionalidades em partes independentes.
+    Muito conhecido por seu uso nos shells Unix (Bash, Zsh).
+    Presente também em linguagens funcionais e frameworks como MapReduce.
 
 2. Topologia
+    A arquitetura é composta por canais (pipes) e filtros (filters).
+    Canais:
+      Comunicação unidirecional e normalmente ponto a ponto (não broadcast).
+      Recebem dados de uma fonte e passam para o próximo filtro.
+      Dados geralmente pequenos → alto desempenho.
+      Canal apenas transporta os dados, sem lógica.
 
-A arquitetura é composta por canais (pipes) e filtros (filters).
+    Filtros:
+      Unidades de processamento autônomas e independentes.
+      Em geral sem estado.
+      Devem executar uma única tarefa.
+      Tarefas complexas → combinam-se vários filtros.
 
-Canais
+    Tipos de Filtros
+        1.Produtor
+           Inicia o pipeline.
+           Apenas envia dados.
 
-Comunicação unidirecional e normalmente ponto a ponto (não broadcast).
+        2.Transformador
+            Recebe entrada
+             Transforma
+             Envia saída
+             Similar ao Map em programação funcional.
 
-Recebem dados de uma fonte e passam para o próximo filtro.
+         3.Verificador
+            Testa condições ou critérios
+            Pode ou não emitir saída
+            Similar ao Reduce.
 
-Dados geralmente pequenos → alto desempenho.
-
-Canal apenas transporta os dados, sem lógica.
-
-Filtros
-
-Unidades de processamento autônomas e independentes.
-
-Em geral sem estado.
-
-Devem executar uma única tarefa.
-
-Tarefas complexas → combinam-se vários filtros.
-
-Tipos de Filtros
-
-Produtor
-
-Inicia o pipeline.
-
-Apenas envia dados.
-
-Transformador
-
-Recebe entrada
-
-Transforma
-
-Envia saída
-
-Similar ao Map em programação funcional.
-
-Verificador
-
-Testa condições ou critérios
-
-Pode ou não emitir saída
-
-Similar ao Reduce.
-
-Consumidor
-
-Fim do fluxo
-
-Pode persistir dados ou exibir resultados.
+       4.Consumidor
+           Fim do fluxo
+           Pode persistir dados ou exibir resultados.
 
 3. Reutilização e Composição
 
-A simplicidade dos filtros e a comunicação unidirecional facilitam reutilização, composição e flexibilidade.
-
-Desenvolvedores conseguem montar pipelines altamente criativos combinando pequenos comandos.
+      A simplicidade dos filtros e a comunicação unidirecional facilitam reutilização, composição e flexibilidade.
+     Desenvolvedores conseguem montar pipelines altamente criativos combinando pequenos comandos.
 
 Caso clássico:
-
-Donald Knuth escreveu várias páginas em Pascal para resolver um problema de contagem de palavras.
-
-Doug McIlroy resolveu o mesmo problema com um curto shell script, demonstrando o poder desse estilo.
+    - Donald Knuth escreveu várias páginas em Pascal para resolver um problema de contagem de palavras.
+    - Doug McIlroy resolveu o mesmo problema com um curto shell script, demonstrando o poder desse estilo.
 
 
 Exemplo do Estilo de Arquitetura Pipeline
 1. Onde esse padrão aparece
-
-EDI (Intercâmbio Eletrônico de Dados)
-
-Conversão e transformação de documentos entre formatos → uso natural de pipes-and-filters.
-
-Ferramentas ETL
-
-Extrair → Transformar → Carregar segue exatamente o fluxo pipeline.
-
-Orquestradores e mediadores (como Apache Camel)
-
-Passam informações de uma etapa de negócio para outra usando canais e filtros.
+    EDI (Intercâmbio Eletrônico de Dados)
+    Conversão e transformação de documentos entre formatos → uso natural de pipes-and-filters.
+    Ferramentas ETL
+    Extrair → Transformar → Carregar segue exatamente o fluxo pipeline.
+    Orquestradores e mediadores (como Apache Camel)
+    Passam informações de uma etapa de negócio para outra usando canais e filtros.
 
 2. Exemplo Prático – Pipeline com Apache Kafka
-
-(Figura 11-2)
-
-Fluxo Geral
-
-Serviços enviam informações de telemetria via streaming para o Kafka.
-
-A arquitetura pipeline organiza o processamento desses eventos em filtros encadeados.
+    Fluxo Geral
+    Serviços enviam informações de telemetria via streaming para o Kafka.
+    A arquitetura pipeline organiza o processamento desses eventos em filtros encadeados.
 
 3. Descrição dos Filtros do Exemplo
-a) Service Info Capture
+    a) Service Info Capture
+        Tipo: Produtor
+        Inscreve-se no tópico do Kafka.
+        Captura dados brutos enviados pelos serviços.
+        Encaminha para o próximo filtro.
 
-Tipo: Produtor
+    b) Duration Filter
+        Tipo: Verificador
+        Função: checar se os dados estão relacionados à duração da requisição (ms).
+        Se SIM → envia para Duration Calculator.
+        Se NÃO → encaminha para Uptime Filter.
 
-Inscreve-se no tópico do Kafka.
+    c) Duration Calculator
+        Tipo: Transformador
+         Calcula a métrica de duração.
+        Envia para o próximo estágio do pipeline.
 
-Captura dados brutos enviados pelos serviços.
+    d) Uptime Filter
+        Tipo: Verificador
+        Verifica se os dados pertencem à métrica de tempo de atividade (uptime).
+        Se NÃO → pipeline encerra (dados não são relevantes).
+        Se SIM → encaminha para Uptime Calculator.
 
-Encaminha para o próximo filtro.
+    e) Uptime Calculator
+        Tipo: Transformador
+        Calcula o uptime do serviço.
+        Encaminha o resultado ao consumidor.
 
-b) Duration Filter
-
-Tipo: Verificador
-
-Função: checar se os dados estão relacionados à duração da requisição (ms).
-
-Se SIM → envia para Duration Calculator.
-
-Se NÃO → encaminha para Uptime Filter.
-
-c) Duration Calculator
-
-Tipo: Transformador
-
-Calcula a métrica de duração.
-
-Envia para o próximo estágio do pipeline.
-
-d) Uptime Filter
-
-Tipo: Verificador
-
-Verifica se os dados pertencem à métrica de tempo de atividade (uptime).
-
-Se NÃO → pipeline encerra (dados não são relevantes).
-
-Se SIM → encaminha para Uptime Calculator.
-
-e) Uptime Calculator
-
-Tipo: Transformador
-
-Calcula o uptime do serviço.
-
-Encaminha o resultado ao consumidor.
-
-f) Database Output
-
-Tipo: Consumidor
-
-Persiste as métricas processadas em um banco Mon.
+    f) Database Output
+        Tipo: Consumidor
+        Persiste as métricas processadas em um banco Mon.
 
 4. Característica Importante Demonstrada
-Extensibilidade
+    Extensibilidade
+     A arquitetura permite adicionar novos filtros facilmente.
+   
 
-A arquitetura permite adicionar novos filtros facilmente.
-
-Exemplo dado: incluir um novo verificador após o Uptime Filter para calcular outra métrica (ex.: tempo de espera da conexão do banco).
-
-
-Classificações das Características da Arquitetura Pipeline
+**Classificações das Características da Arquitetura Pipeline**
 1. Critério de Avaliação
 
-★ = característica pouco suportada.
+  ★ = característica pouco suportada.
+  ★★★★★ = característica muito bem suportada.
 
-★★★★★ = característica muito bem suportada.
-
-Pipeline é tecnicamente particionada (pelos tipos de filtro).
-
-Mas quase sempre é monolítica, portanto quantum = 1.
+  Pipeline é tecnicamente particionada (pelos tipos de filtro).
+  Mas quase sempre é monolítica, portanto quantum = 1.
 
 2. Pontos Fortes
-Custo Geral, Simplicidade e Modularidade – ★★★★☆
-
-Monolítica → sem complexidades de sistemas distribuídos.
-
-Simples de entender, implementar e manter.
-
-Modularidade vem da separação dos filtros (produtor, verificador, transformador, consumidor).
-
-Um filtro pode ser modificado sem afetar os demais.
-
-Ex.: Duration Calculator pode mudar sem impactar outros filtros do exemplo Kafka.
+    Custo Geral, Simplicidade e Modularidade – ★★★★☆
+    Monolítica → sem complexidades de sistemas distribuídos.
+    Simples de entender, implementar e manter.
+    Modularidade vem da separação dos filtros (produtor, verificador, transformador, consumidor).
+    Um filtro pode ser modificado sem afetar os demais.
 
 3. Implementabilidade e Testabilidade – ★★★☆☆
-
-Um pouco melhores que a arquitetura em camadas.
-
-Modularidade dos filtros facilita isolamentos e testes.
-
-Contudo, ainda é monolítica, então:
-
-Qualquer alteração exige implantar o monolito inteiro.
-
-Requer testar todo o conjunto.
-
-Frequência de deploy tende a ser baixa.
+    Um pouco melhores que a arquitetura em camadas.
+    Modularidade dos filtros facilita isolamentos e testes.
+    Contudo, ainda é monolítica, então:
+    Qualquer alteração exige implantar o monolito inteiro.
+    Requer testar todo o conjunto.
+    Frequência de deploy tende a ser baixa.
 
 4. Confiabilidade – ★★★☆☆
-
-Boa por não ser distribuída → sem latência, rede, tráfego externo.
-
-Mas limitada porque:
-
-É monolítica.
-
-Alterações simples exigem testar e implantar o sistema inteiro.
-
-Problemas de testabilidade afetam confiabilidade.
+    Boa por não ser distribuída → sem latência, rede, tráfego externo.
+    Mas limitada porque:
+    É monolítica.
+    Alterações simples exigem testar e implantar o sistema inteiro.
+    Problemas de testabilidade afetam confiabilidade.
 
 5. Elasticidade e Escalabilidade – ★☆☆☆☆
-
-Muito baixas, assim como na arquitetura em camadas.
-
-Motivos:
-
-Monolito não escala horizontalmente.
-
-Difícil aplicar paralelismo e processamento distribuído.
-
-Mesmo com técnicas como multithreading ou mensageria interna, a arquitetura não favorece elasticidade.
-
-Toda a aplicação é um único quantum de escalabilidade.
+    Muito baixas, assim como na arquitetura em camadas.
+    Motivos:
+    Monolito não escala horizontalmente.
+    Difícil aplicar paralelismo e processamento distribuído.
+    Mesmo com técnicas como multithreading ou mensageria interna, a arquitetura não favorece elasticidade.
+    Toda a aplicação é um único quantum de escalabilidade.
 
 6. Tolerância a Falhas e Disponibilidade – ★☆☆☆☆
+    Não suporta bem falhas devido ao monólito.
+    Falha em um ponto → aplicação inteira cai.
+    Disponibilidade reduzida
+    MTTR alto (monolitos demoram a reiniciar).
+    Tempo de inicialização pode variar de 2 min (apps menores) até 15+ min (apps grandes).
 
-Não suporta bem falhas devido ao monólito.
+_________________________________________________________________________________________________________
 
-Falha em um ponto → aplicação inteira cai.
 
-Disponibilidade reduzida
-
-MTTR alto (monolitos demoram a reiniciar).
-
-Tempo de inicialização pode variar de 2 min (apps menores) até 15+ min (apps grandes).
