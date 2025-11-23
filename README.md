@@ -773,5 +773,679 @@ Ex.: uma solicitação processada com sucesso mas sem resposta pode ser reenviad
 ______________________________________________________________________________________________________
 AULA 14.10
 
+Os padrões de arquitetura  funcionam como “atalhos” compartilhados entre arquitetos. 
+-- estrutura, características esperadas, pontos fortes, riscos, estratégias de implementação e formas comuns de lidar com dados.
 
-CAP9
+Por isso arquitetos precisam conhecer bem esses estilos básicos, porque eles dão linguagem comum para discutir soluções. Cada padrão captura uma topologia típica e um conjunto de comportamentos que se mostraram úteis ou problemáticos.
+
+Importância dos nomes dos padrões
+    -Permitem conversas rápidas e claras entre profissionais experientes.
+    -Cada estilo encapsula muitos detalhes que já são compreendidos e compartilhados no setor.
+
+O que um estilo de arquitetura descreve
+    -A topologia do sistema.
+    -Características esperadas da arquitetura.
+    -Benefícios comuns e riscos conhecidos.
+
+Padrões modernos x Padrões fundamentais
+    -Existem muitos padrões atuais explicados em profundidade em materiais mais recentes.
+    -Porém, vários padrões essenciais aparecem repetidamente na história da arquitetura de software.
+    -Esses padrões básicos ajudam a entender como organizar código e dividir responsabilidades.
+
+Exemplo de padrão fundamental
+    -Arquitetura em camadas: separa responsabilidades por funcionalidade.
+    -Mesmo sendo antigo, continua presente em versões modernas e adaptadas.
+
+Por que conhecer os padrões fundamentais
+    -Eles servem como base para estruturas arquiteturais mais complexas.
+    -Auxiliam na compreensão, comunicação e tomada de decisão em projetos de software.
+
+**GRANDE BOLA DE LAMA:**
+  É um antipadrão que representa sistemas sem estrutura arquitetural clara.
+  Código é desorganizado, cheio de “remendos”, acoplamento excessivo e crescimento descontrolado.
+  Informações se espalham e se repetem por toda a aplicação, tornando tudo global e difícil de manter.
+  Muitas aplicações começam simples e, sem governança, viram uma bagunça conforme crescem.
+  Gera problemas sérios de testabilidade, escalabilidade, desempenho e manutenção.
+  Nenhum arquiteto planeja isso; acontece por falta de cuidado com qualidade e estrutura.
+  Na prática, mudanças em uma única classe podem causar efeitos colaterais imprevisíveis no sistema todo.
+
+**Arquitetura Unitária:**
+  É o modelo mais antigo: software e hardware como uma única entidade.
+  Surgiu em épocas em que existia apenas um computador executando todo o sistema.
+  Com a evolução (mainframes → PCs → redes), o software passou a se separar em camadas e componentes.
+  Hoje, arquiteturas totalmente unitárias são raras, existindo principalmente em sistemas embarcados ou ambientes muito restritos.
+  À medida que sistemas crescem, precisam separar responsabilidades para manter desempenho, escala e manutenibilidade — o que faz a       arquitetura unitária deixar de ser prática.
+
+**Cliente/Servidor**
+  -Surge da necessidade de dividir um sistema único em partes, separando responsabilidades.
+  -É um dos estilos mais básicos: front-end (cliente) e back-end (servidor).
+  -Existem várias versões conforme a tecnologia evoluiu.
+
+**1. Desktop + Servidor de Banco de Dados:**
+  Aplicação rodava no desktop (interface e lógica de apresentação).
+  Os dados ficavam em um servidor de banco de dados separado.
+  Aproveitava o avanço de bancos independentes acessados via rede.
+
+**2. Navegador + Servidor Web**
+  O navegador vira um cliente leve.
+  O servidor web processa a aplicação e se conecta ao banco de dados.
+  Apesar de ter três elementos (navegador → servidor web → banco), ainda era visto como duas camadas do ponto de vista arquitetural: cliente e servidor.
+
+**3. Arquitetura de Três Camadas**
+  Popular no final dos anos 1990.
+  Separada em:
+    Camada de apresentação (HTML/JS no front).
+    Camada de aplicação (servidor de aplicação).
+    Camada de dados (servidor de banco).
+    Encorajada por ferramentas como servidores de aplicação .NET/Java e protocolos distribuídos (CORBA, DCOM).
+
+
+**Três Camadas, Design de Linguagem e Implicações em Longo Prazo**
+  Na época do surgimento do Java, a arquitetura em três camadas era dominante.
+  Os criadores da linguagem acreditavam que esse modelo seria o padrão definitivo.
+  Como mover objetos pela rede era difícil em linguagens como C++, o Java incluiu suporte nativo à serialização para facilitar sistemas distribuídos.
+  Com o tempo, o estilo de três camadas deixou de ser central, mas a serialização permaneceu na linguagem — hoje é quase obsoleta, mas precisa ser mantida por compatibilidade.
+  Isso mostra que decisões de design podem ter consequências inesperadas e duradouras.
+  Por isso, recomenda-se sempre escolher designs simples, reduzindo riscos futuros e legados difíceis de remover.
+
+**Arquiteturas Monolíticas vs. Distribuídas:**
+  As arquiteturas podem ser agrupadas em dois grandes estilos:
+  Monolíticas: todo o código em uma única unidade de implementação.
+  Distribuídas: várias unidades independentes, conectadas por comunicação remota.
+  Essa divisão é útil porque arquiteturas distribuídas enfrentam desafios que não existem em monolitos.
+
+**Estilos Monolíticos**
+  -Arquitetura em camadas
+  -Arquitetura de pipeline
+  -Arquitetura de microkernel
+
+**Estilos Distribuídos**
+  -Arquitetura baseada em serviços
+  -Arquitetura orientada a eventos
+  -Arquitetura baseada em espaços
+  -Arquitetura orientada a serviços
+  -Arquitetura de microsserviços
+
+**Falácias da Computação Distribuída**
+
+  **1. A rede é confiável (mas não é)**
+    Arquitetos assumem que a rede sempre funciona → falso.
+    Mesmo serviços íntegros podem falhar só por causa da rede.
+    Por isso existem timeouts, retries, circuit breakers etc.
+    Quanto mais distribuída a arquitetura, maior a chance de falha.
+
+  **2. A latência é zero (mas nunca é)**
+    Chamada local = nanossegundos; chamada remota = milissegundos.
+    Encadear múltiplas chamadas entre serviços aumenta muito o tempo total.
+    Médias enganam: o 95º/99º percentil costuma ser o verdadeiro problema.
+    Saber a latência real da produção é essencial para decidir se distribuir o sistema faz sentido.
+
+  **3. A largura de banda é infinita (mas é limitada)**
+    Em monólitos isso quase não importa; em sistemas distribuídos importa muito.
+    Trocar grandes payloads entre serviços satura a rede.
+    Stamp coupling (retornar dados demais) consome largura de banda desnecessária.
+    Boas práticas: endpoints privados, seletores de campo, GraphQL, CDC, mensageria interna.
+
+  **4. A rede é segura (mas não é)**
+    Cada endpoint exposto aumenta a superfície de ataque.
+    Arquiteturas distribuídas exigem segurança em cada serviço, inclusive comunicação interna.
+    Isso impacta desempenho, complexidade e tempo de resposta.
+
+  **5. A topologia nunca muda (mas muda o tempo todo)**
+    Roteadores, switches, firewalls, regras, configs — tudo muda.
+    Pequenas alterações podem quebrar latências, timeouts e circuit breakers.
+    Arquitetos precisam acompanhar mudanças da rede para evitar surpresas.
+
+  **6. Existe apenas um administrador (mas existem muitos)**
+    Em grandes organizações, há dezenas de admins de rede.
+    Saber quem responde por latência, topologia, firewalls etc. é complexo.
+    Arquiteturas distribuídas exigem coordenação constante entre múltiplos times.
+
+  **7. O custo do transporte é zero (mas custa dinheiro)**
+    Não é só latência: é custo financeiro mesmo.
+    Distribuir sistemas exige mais hardware, gateways, firewalls, proxies e infraestrutura.
+    Migrar para distribuído sem avaliar custos reais leva a surpresas no orçamento.
+
+  **8. A rede é homogênea (mas é heterogênea)**
+    Empresas usam equipamentos de múltiplos fornecedores.
+    Nem todos funcionam perfeitamente juntos → pacotes podem se perder.
+    Isso afeta confiabilidade, latência e largura de banda.
+    Essa falácia se conecta diretamente a todas as outras.
+
+**Outras Considerações em Arquiteturas Distribuídas:**
+
+Além das oito falácias, existem desafios adicionais que não aparecem em arquiteturas monolíticas, mas são comuns em ambientes distribuídos. A seguir, os principais:
+
+  1. Log distribuído
+    Em monólitos, normalmente existe apenas um log central, o que facilita rastrear erros e entender o fluxo de uma requisição.
+    Em arquiteturas distribuídas, há dezenas ou centenas de logs, espalhados em serviços diferentes, servidores distintos, e cada um com formatos próprios.
+    Rastrear uma requisição ponta a ponta torna-se mais demorado e complexo.
+    Ferramentas como Splunk, Elastic Stack e Datadog ajudam a consolidar logs, mas não resolvem toda a complexidade do cenário distribuído.
+    Padrões avançados de logging (correlação, tracing distribuído, OpenTelemetry) são soluções, mas estão além do escopo do texto-base.
+
+2. Transações distribuídas
+    Em sistemas monolíticos, transações ACID são simples: commit e rollback garantem consistência forte.
+    Em sistemas distribuídos, isso não é possível da mesma forma:
+    Cada serviço mantém seu próprio repositório.
+    As operações precisam ser coordenadas entre múltiplas partes.
+    O modelo dominante passa a ser consistência eventual, que prioriza:
+        Escalabilidade
+        Desempenho
+        Alta disponibilidade
+
+
+  Para tratar transações distribuídas, usam-se padrões como:
+      Sagas (via eventos ou máquinas de estado)
+      Transações BASE (Basic Availability, Soft State, Eventual Consistency)
+      O “estado suave” representa dados temporariamente inconsistentes durante o processo de sincronização.
+
+3. Manutenção e versionamento de contrato
+    O “contrato” define como cliente e servidor interagem (formato de dados, endpoints, comportamento).
+    Em sistemas distribuídos, esse contrato é mais difícil de manter porque:
+    Os serviços são desacoplados.
+    As equipes responsáveis são diferentes (times, áreas, squads).
+    Versionar APIs sem quebrar clientes é um dos maiores desafios em microserviços.
+    A comunicação entre versões, descontinuação controlada e compatibilidade entre serviços exigem:
+          Gestão de versionamento bem estruturada
+          Estratégias de backward compatibility
+          Modelos de integração que evitem quebra na comunicação
+
+_______________________________________________________________________________________________________________
+AULA 20.10 e 21.10
+
+**Estilo de Arquitetura em Camadas**
+
+1. Visão Geral
+  Também chamada de arquitetura n-tier ou multicamadas.
+  É um dos estilos de arquitetura mais utilizados no desenvolvimento de aplicações empresariais.
+  Popular por três motivos principais:
+  Simplicidade
+  Familiaridade dos desenvolvedores
+  Baixo custo de implementação
+
+2. Relação com a Lei de Conway
+  A Lei de Conway afirma que sistemas tendem a refletir a estrutura organizacional das equipes que os criam.
+  A arquitetura em camadas se torna natural porque as equipes geralmente já são divididas em:
+  Desenvolvedores de Interface de Usuário
+  Desenvolvedores de back-end
+  Especialistas em regras de negócio
+  DBAs
+  Essas funções já formam “camadas” dentro da organização, o que leva naturalmente à adoção desse estilo arquitetural.
+
+3. Adoção por Implicação
+  Muitas equipes escolhem esse estilo sem planejamento explícito.
+  Ocorre quando:
+    O arquiteto não tem clareza sobre qual estilo escolher.
+    A equipe simplesmente “começa a codar”.
+ 
+
+4. Topologia
+  Os componentes são organizados em camadas horizontais, cada uma com responsabilidades distintas.
+  Não existe número fixo de camadas, mas o modelo mais comum inclui quatro:
+  Apresentação – Interface com o usuário.
+  Comercial (Business) – Regras e lógica de negócio.
+  Persistência – Manipulação de dados e acesso ao banco.
+  Banco de Dados – Armazenamento efetivo dos dados.
+
+5. Variações do Modelo
+  Em aplicações pequenas, as camadas comercial e persistência podem ser unificadas em uma única camada de negócio.
+  Pequenas aplicações podem ter 3 camadas.
+  Sistemas maiores podem ter 5 ou mais, dependendo da complexidade e necessidade de separação de responsabilidades.
+
+CAMADA DE APRESENTAÇÃO > CAMADA COMERCIAL > CAMADA DE PERSISTÊNCIA > CAMADA DO BANCO DE DADOS
+
+**Variantes da Topologia Física (Figura 10-2)**
+  1. Variante 1 – Três camadas juntas + BD separado
+      Apresentação, Comercial e Persistência ficam juntas em uma única implementação.
+      Banco de dados fica separado fisicamente (servidor externo / arquivo).
+
+  2. Variante 2 – Apresentação separada + Comercial/Persistência juntas
+      Camada de Apresentação está isolada em outro servidor/unidade.
+      Comercial e Persistência permanecem juntas em outra unidade.
+      Banco de dados continua separado fisicamente.
+
+  3. Variante 3 – Todas as camadas juntas
+      Apresentação, Comercial, Persistência e Banco de Dados estão todos na mesma implementação.
+      Usada em aplicações pequenas, produtos on-premises, bancos embarcados ou em memória.
+
+**Função e Responsabilidade das Camadas**
+
+  **Camada de Apresentação:**
+    Interface com o usuário.
+    Comunicação com navegador/app.
+    Não precisa saber como os dados são buscados — apenas exibe.
+
+  **Camada de Negócio (Comercial):**
+    Regras de negócio.
+    Processamento dos dados recebidos.
+    Não se preocupa com layout nem com origem dos dados.
+
+  **Camada de Persistência:**
+    Acesso ao banco de dados.
+    Busca, gravação e manipulação de dados.
+
+  **Banco de Dados:**
+    Armazenamento físico dos dados.
+    Separação de Preocupações
+    Cada camada trata apenas das responsabilidades da sua própria lógica.
+    Facilita organização, especialização técnica e criação de componentes reutilizáveis.
+
+
+**Benefícios**
+    Estrutura simples e clara.
+    Facilita a divisão do trabalho entre times especializados (UI, back-end, DBAs).
+    Facilita manutenção quando mudanças afetam apenas uma camada.
+
+**Trade-off: Menos Agilidade**
+    Por ser tecnicamente particionada, não por domínio, o impacto é alto quando se altera funcionalidades reais do negócio.
+    Uma mudança em um domínio (ex.: Cliente) tem que atravessar várias camadas.
+    Torna mais difícil responder rápido a mudanças — “baixa agilidade organizacional”.
+
+Consequência: Dificuldade com Domain-Driven Design
+  Os componentes não são organizados por domínio comercial, mas sim por função técnica.
+  Um mesmo domínio fica espalhado por várias camadas (UI, negócio, persistência, banco).
+  Por isso, DDD não se adapta bem ao estilo em camadas.
+
+
+**Camadas de Isolamento**
+**Camadas Abertas vs. Fechadas**
+    
+  **Camada fechada:**
+    A requisição não pode pular camadas — deve seguir a ordem (Apresentação → Negócio → Persistência → Banco).
+    Mantém o fluxo controlado e padronizado.
+
+  **Camada aberta:**
+    Permite que camadas “saltem” outras (ex.: Apresentação → Persistência).
+    Traz velocidade, mas aumenta o acoplamento.
+
+**Por que Fechar as Camadas? (Isolamento)**
+  Alterações em uma camada não afetam as outras.
+  Cada camada mantém seu contrato estável.
+  Reduz o impacto de mudanças internas.
+  Garante baixo acoplamento e independência.
+  Uma camada não precisa conhecer a implementação interna da outra.
+  Evita arquiteturas frágeis.
+  Se a apresentação acessa diretamente a persistência, qualquer mudança na persistência quebra várias camadas.
+
+**Vantagens do Isolamento**
+  Facilidade de manutenção.
+  Menos risco de efeitos colaterais ao alterar uma camada.
+  Evolução independente das camadas.
+  Melhor organização e clareza arquitetural.
+
+**Trade-off**
+  Processos podem ficar menos eficientes, porque todas as camadas devem ser percorridas mesmo para operações simples.
+  Mas a segurança e estabilidade da arquitetura compensam essa perda de velocidade.
+
+**Adicionando Camadas**
+Por que adicionar uma nova camada?
+  Às vezes, apenas fechar camadas não resolve restrições de acesso.
+  Exemplo:  
+    Existem objetos de negócio compartilhados (utils, auditoria, log etc.) dentro da camada de negócio.
+    A arquitetura quer impedir que a camada de apresentação use esses objetos, mas…
+    A apresentação tem acesso à camada de negócio — então a restrição é difícil de impor apenas com disciplina de desenvolvimento.
+    Solução: Criar uma nova Camada de Serviços
+    Cria-se uma camada específica só para objetos compartilhados.
+    Essa nova camada é inserida entre a apresentação e a camada de negócio.
+    Resultado:
+    A camada de apresentação não consegue acessar diretamente os objetos compartilhados da lógica de negócio.
+    A camada de negócio continua podendo acessar tudo o que precisa.
+    Camadas Abertas e Fechadas no Novo Cenário
+    A nova Camada de Serviços deve ser aberta.
+    Motivo: a camada de negócio precisa poder pular essa camada e ir direto à persistência.
+    A camada de negócio continua fechada, garantindo isolamento.
+    Assim, a arquitetura controla corretamente o fluxo sem quebrar o isolamento.
+
+**Por que isso é importante?**
+  Define claramente quem pode acessar o quê dentro da arquitetura.
+  Evita acessos indevidos entre camadas e mantém a aplicação organizada e segura.
+  Ajuda desenvolvedores a entender:
+      As regras de navegação entre camadas
+      As restrições de acesso
+      Os motivos dessas restrições
+
+**Riscos de não documentar**
+    Se as camadas abertas/fechadas não forem explicadas:
+    Desenvolvedores acabam fazendo acessos diretos indevidos
+    A arquitetura se torna frágil e muito acoplada
+    Aumentam os custos de manutenção, testes e implantação
+
+
+**1. Quando usar Arquitetura em Camadas**
+    Quando ainda não se sabe qual arquitetura final será usada.
+    Muito usada como base inicial em projetos que futuramente podem migrar para microsserviços.
+    Aplicações pequenas e simples
+    Orçamentos reduzidos
+    Prazos curtos
+    Equipes menos experientes
+    Ambientes onde ainda não há clareza de requisitos
+
+**2. Boas Práticas ao Adotar esse Estilo**
+    Minimizar reutilização para evitar acoplamento excessivo.
+    Manter hierarquias de herança rasas, garantindo modularidade.
+    Isso facilita uma migração futura para outro estilo arquitetural.
+
+**3. Cuidado com o Antipadrão “Sinkhole”**
+    Ocorre quando as requisições atravessam várias camadas sem que nenhuma camada execute lógica real, apenas repassando chamadas até chegar ao banco.
+
+Consequências
+    Processamento desnecessário
+    Instanciação inútil de objetos
+    Aumento de consumo de memória
+    Piora de desempenho
+
+Como avaliar se é um problema?
+
+    Use a regra 80-20:
+        20% de requests serem sinkhole → aceitável
+        80% → a arquitetura em camadas não é a adequada para o domínio
+
+Como mitigar?
+    Tornar todas as camadas abertas (trade-off: maior risco e maior dificuldade de controle arquitetural)
+
+**4. Vantagens da Arquitetura em Camadas**
+    Baixo custo de desenvolvimento
+    Simplicidade e forte familiaridade entre equipes
+    Ausência das complexidades das arquiteturas distribuídas
+    Bom desempenho pela ausência de latência de rede
+
+**5. Desvantagens com o Crescimento da Aplicação**
+    À medida que o sistema cresce, surgem impactos negativos em:
+        Manutenção
+        Agilidade
+        Testabilidade
+        Implementabilidade
+        Escalabilidade
+        Elasticidade
+
+
+6. Análise das Características da Arquitetura (Figura 10-6)
+
+  Escalabilidade e Elasticidade — 1 estrela
+      Estilo monolítico limita paralelismo
+      Para escalar, exige soluções complexas como multithreading, mensageria interna etc.
+      A aplicação inteira é um “quantum” único — tudo escala junto.
+
+  Testabilidade — 2 estrelas
+      Pequenas alterações afetam toda a base
+      Testes completos são caros e demorados
+      Simulações (mocking) são possíveis, elevando um pouco a nota
+
+  Desempenho — 2 estrelas
+      Prejudicado por:
+      Falta de paralelismo
+      Antipadrão sinkhole
+      Camadas fechadas
+      Cache e threads ajudam, mas exigem grande esforço
+
+  Confiabilidade — 3 estrelas
+      Benefícios:
+      Sem latência de rede
+      Sem dependências distribuídas
+      Problemas:
+      Baixa testabilidade
+      Alto risco de implementação
+      Falhas pequenas derrubam todo o sistema
+
+  Simplicidade e Custo — 4 a 5 estrelas
+      Pontos mais fortes do estilo
+      Ideal para iniciar projetos ou aplicações menores
+
+  Implementabilidade — 1 a 2 estrelas
+      Deploy arriscado e pesado
+      Alterações pequenas exigem reimplantar tudo
+      Alto impacto em banco e configurações
+
+  Tolerância a Falhas — 1 estrela
+      Arquitetura monolítica → falha localizada derruba tudo
+      Disponibilidade também baixa devido ao MTTR alto
+      Apps grandes podem levar 15+ minutos para subir
+
+______________________________________________________________________________________________
+AULA 27.10 e 28.10
+
+CAPITULO 11:
+
+Capítulo 11 – Estilo de Arquitetura Pipeline (Pipes-and-Filters)
+1. Conceito Geral
+
+Um dos estilos arquiteturais mais antigos e fundamentais.
+
+Também chamado de pipes-and-filters.
+
+Surge quando desenvolvedores começam a dividir funcionalidades em partes independentes.
+
+Muito conhecido por seu uso nos shells Unix (Bash, Zsh).
+
+Presente também em linguagens funcionais e frameworks como MapReduce.
+
+2. Topologia
+
+A arquitetura é composta por canais (pipes) e filtros (filters).
+
+Canais
+
+Comunicação unidirecional e normalmente ponto a ponto (não broadcast).
+
+Recebem dados de uma fonte e passam para o próximo filtro.
+
+Dados geralmente pequenos → alto desempenho.
+
+Canal apenas transporta os dados, sem lógica.
+
+Filtros
+
+Unidades de processamento autônomas e independentes.
+
+Em geral sem estado.
+
+Devem executar uma única tarefa.
+
+Tarefas complexas → combinam-se vários filtros.
+
+Tipos de Filtros
+
+Produtor
+
+Inicia o pipeline.
+
+Apenas envia dados.
+
+Transformador
+
+Recebe entrada
+
+Transforma
+
+Envia saída
+
+Similar ao Map em programação funcional.
+
+Verificador
+
+Testa condições ou critérios
+
+Pode ou não emitir saída
+
+Similar ao Reduce.
+
+Consumidor
+
+Fim do fluxo
+
+Pode persistir dados ou exibir resultados.
+
+3. Reutilização e Composição
+
+A simplicidade dos filtros e a comunicação unidirecional facilitam reutilização, composição e flexibilidade.
+
+Desenvolvedores conseguem montar pipelines altamente criativos combinando pequenos comandos.
+
+Caso clássico:
+
+Donald Knuth escreveu várias páginas em Pascal para resolver um problema de contagem de palavras.
+
+Doug McIlroy resolveu o mesmo problema com um curto shell script, demonstrando o poder desse estilo.
+
+
+Exemplo do Estilo de Arquitetura Pipeline
+1. Onde esse padrão aparece
+
+EDI (Intercâmbio Eletrônico de Dados)
+
+Conversão e transformação de documentos entre formatos → uso natural de pipes-and-filters.
+
+Ferramentas ETL
+
+Extrair → Transformar → Carregar segue exatamente o fluxo pipeline.
+
+Orquestradores e mediadores (como Apache Camel)
+
+Passam informações de uma etapa de negócio para outra usando canais e filtros.
+
+2. Exemplo Prático – Pipeline com Apache Kafka
+
+(Figura 11-2)
+
+Fluxo Geral
+
+Serviços enviam informações de telemetria via streaming para o Kafka.
+
+A arquitetura pipeline organiza o processamento desses eventos em filtros encadeados.
+
+3. Descrição dos Filtros do Exemplo
+a) Service Info Capture
+
+Tipo: Produtor
+
+Inscreve-se no tópico do Kafka.
+
+Captura dados brutos enviados pelos serviços.
+
+Encaminha para o próximo filtro.
+
+b) Duration Filter
+
+Tipo: Verificador
+
+Função: checar se os dados estão relacionados à duração da requisição (ms).
+
+Se SIM → envia para Duration Calculator.
+
+Se NÃO → encaminha para Uptime Filter.
+
+c) Duration Calculator
+
+Tipo: Transformador
+
+Calcula a métrica de duração.
+
+Envia para o próximo estágio do pipeline.
+
+d) Uptime Filter
+
+Tipo: Verificador
+
+Verifica se os dados pertencem à métrica de tempo de atividade (uptime).
+
+Se NÃO → pipeline encerra (dados não são relevantes).
+
+Se SIM → encaminha para Uptime Calculator.
+
+e) Uptime Calculator
+
+Tipo: Transformador
+
+Calcula o uptime do serviço.
+
+Encaminha o resultado ao consumidor.
+
+f) Database Output
+
+Tipo: Consumidor
+
+Persiste as métricas processadas em um banco Mon.
+
+4. Característica Importante Demonstrada
+Extensibilidade
+
+A arquitetura permite adicionar novos filtros facilmente.
+
+Exemplo dado: incluir um novo verificador após o Uptime Filter para calcular outra métrica (ex.: tempo de espera da conexão do banco).
+
+
+Classificações das Características da Arquitetura Pipeline
+1. Critério de Avaliação
+
+★ = característica pouco suportada.
+
+★★★★★ = característica muito bem suportada.
+
+Pipeline é tecnicamente particionada (pelos tipos de filtro).
+
+Mas quase sempre é monolítica, portanto quantum = 1.
+
+2. Pontos Fortes
+Custo Geral, Simplicidade e Modularidade – ★★★★☆
+
+Monolítica → sem complexidades de sistemas distribuídos.
+
+Simples de entender, implementar e manter.
+
+Modularidade vem da separação dos filtros (produtor, verificador, transformador, consumidor).
+
+Um filtro pode ser modificado sem afetar os demais.
+
+Ex.: Duration Calculator pode mudar sem impactar outros filtros do exemplo Kafka.
+
+3. Implementabilidade e Testabilidade – ★★★☆☆
+
+Um pouco melhores que a arquitetura em camadas.
+
+Modularidade dos filtros facilita isolamentos e testes.
+
+Contudo, ainda é monolítica, então:
+
+Qualquer alteração exige implantar o monolito inteiro.
+
+Requer testar todo o conjunto.
+
+Frequência de deploy tende a ser baixa.
+
+4. Confiabilidade – ★★★☆☆
+
+Boa por não ser distribuída → sem latência, rede, tráfego externo.
+
+Mas limitada porque:
+
+É monolítica.
+
+Alterações simples exigem testar e implantar o sistema inteiro.
+
+Problemas de testabilidade afetam confiabilidade.
+
+5. Elasticidade e Escalabilidade – ★☆☆☆☆
+
+Muito baixas, assim como na arquitetura em camadas.
+
+Motivos:
+
+Monolito não escala horizontalmente.
+
+Difícil aplicar paralelismo e processamento distribuído.
+
+Mesmo com técnicas como multithreading ou mensageria interna, a arquitetura não favorece elasticidade.
+
+Toda a aplicação é um único quantum de escalabilidade.
+
+6. Tolerância a Falhas e Disponibilidade – ★☆☆☆☆
+
+Não suporta bem falhas devido ao monólito.
+
+Falha em um ponto → aplicação inteira cai.
+
+Disponibilidade reduzida
+
+MTTR alto (monolitos demoram a reiniciar).
+
+Tempo de inicialização pode variar de 2 min (apps menores) até 15+ min (apps grandes).
