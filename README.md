@@ -1358,7 +1358,7 @@ Exemplo do Estilo de Arquitetura Pipeline
 _________________________________________________________________________________________________________
 Aula 03.11 e 04.11
 
-CAPÍTULO 12 = Estilo de Arquitetura Microkernel
+**CAPÍTULO 12 = Estilo de Arquitetura Microkernel**
 
 **Visão Geral**
     O estilo de arquitetura Microkernel, também chamado de arquitetura de plug-ins, existe há décadas e continua extremamente atual.
@@ -1380,141 +1380,75 @@ CAPÍTULO 12 = Estilo de Arquitetura Microkernel
     Isolam funcionalidades específicas e regras personalizadas.
     Podem ser: extensões, módulos de negócio, adaptadores para clientes, recursos opcionais
 
-Sistema Central
-
-É a funcionalidade mínima necessária para o sistema funcionar.
-
-Exemplo: Eclipse → sistema central é apenas um editor de texto simples; plug-ins tornam o IDE útil.
-
-Também pode ser entendido como o fluxo “caminho feliz” da aplicação, sem personalizações complexas.
-
-Benefícios de manter o sistema central simples
-
-Redução da complexidade ciclomática.
-
-Facilidade de extensão e manutenção.
-
-Maior testabilidade.
-
-Separação de regras específicas dos clientes ou casos especiais.
-
-Uso de Plug-ins
-
-Regras específicas e complexas ficam isoladas em componentes de plug-in.
-
-Exemplo: aplicação de reciclagem de dispositivos eletrônicos → cada tipo de dispositivo tem um plug-in próprio.
-
-Adicionar novo comportamento = criar um novo plug-in + registrar.
-
-O sistema central apenas:
-
-Localiza os plug-ins corretos.
-
-Chama sua execução de forma genérica.
-
-Organização do Sistema Central
-
-Pode ser:
-
-Uma arquitetura em camadas.
-
-Um bloco monolítico modular.
-
-Dividido em serviços de domínio separados (cada um com seus plug-ins).
-
-Exemplo de serviços de domínio
-
-Serviço central: Payment Processing.
-
-Cada método de pagamento → um plug-in independente (cartão, PayPal, crédito na loja, etc.).
-
-Banco de Dados
-
-Geralmente, a aplicação inteira (mesmo com plug-ins) compartilha um único banco de dados.
-
-Camada de apresentação
-
-A camada de apresentação pode:
-
-Estar incorporada ao sistema central, ou
-
-Ser uma interface de usuário separada (o sistema central fornece back-end).
-
-A interface separada também pode seguir o estilo microkernel (variações mostradas nas figuras citadas).
-
-Componentes de plug-in — características gerais
-
-São autônomos e independentes; contêm processamento especializado e código personalizado.
-
-Isolam código volátil, melhorando manutenção e testabilidade.
-
-Idealmente sem dependências entre plug-ins.
-
-Comunicação plug-in ↔ sistema central
-
-Normalmente ponto a ponto: chamada de método/função para o ponto de entrada do plug-in.
-
-Dois modelos de implantação:
-
-Tempo de execução: plug-ins podem ser adicionados/removidos sem redeploy; gerenciados por frameworks (ex.: OSGi, Jigsaw, Prism).
-
-Compilação: mais simples, mas exige redeploy da aplicação inteira para mudanças.
-
-Formas de implementação
-
-Bibliotecas compartilhadas (JAR, DLL, Gem) — plug-in como artefato separado.
-
-Namespaces / pacotes no mesmo código — ex.: app.plugin.<domínio>.<contexto> (recomendado para organização).
-
-Exemplo: app.plugin.assessment.iphone6s.
-
-Plug-ins remotos (REST / mensageria / microsserviços)
-
-Alternativa: cada plug-in é um serviço independente acessado via REST ou mensageria.
-
-Benefícios:
-
-Maior desacoplamento, escalabilidade e throughput.
-
-Permite alterações em execução sem frameworks especializados.
-
-Suporta comunicação assíncrona (melhora resposta ao usuário).
-
-Trade-offs / desvantagens:
-
-Torna a arquitetura distribuída (mais complexa de implantar).
-
-Aumenta custo e complexidade operacional.
-
-Se um plug-in remoto ficar sem resposta (ex.: REST), a requisição pode falhar — problema menor em implementação monolítica.
-
-Padrão de acesso ao banco de dados
-
-Não é comum que plug-ins acessem diretamente um banco de dados compartilhado.
-
-Responsabilidade do sistema central: acessar o DB e repassar dados aos plug-ins (maior desacoplamento).
-
-Plug-ins podem ter seu próprio armazenamento (local ou externo) para dados específicos:
-
-Ex.: cada plug-in de avaliação na aplicação de reciclagem pode ter um banco simples ou mecanismo de regras.
-
-Esse armazenamento pode ser externo ou embutido (em memória, embutido, etc.).
-
-Exemplo recorrente (aplicação de reciclagem de eletrônicos)
-
-Cada tipo de dispositivo → plug-in separado (JAR/DLL/nome de namespace).
-
-Sistema central localiza e chama plug-ins; plug-ins contêm regras específicas de avaliação.
-
-Possibilidade de implementar plug-ins como serviços remotos para avaliação assíncrona e notificação posterior.
-
-1. Registro de Plug-ins
-
-O sistema central precisa saber:
-
-Quais plug-ins existem
-
-Como acessá-los
+**Sistema Central**
+    É a funcionalidade mínima necessária para o sistema funcionar.
+    Exemplo: Eclipse → sistema central é apenas um editor de texto simples; plug-ins tornam o IDE útil.
+    Também pode ser entendido como o fluxo “caminho feliz” da aplicação, sem personalizações complexas.
+    
+    Benefícios de manter o sistema central simples
+      Redução da complexidade ciclomática.
+      Facilidade de extensão e manutenção.
+      Maior testabilidade.
+      Separação de regras específicas dos clientes ou casos especiais.
+
+**Uso de Plug-ins**
+    Regras específicas e complexas ficam isoladas em componentes de plug-in.
+    Exemplo: aplicação de reciclagem de dispositivos eletrônicos → cada tipo de dispositivo tem um plug-in próprio.
+    Adicionar novo comportamento = criar um novo plug-in + registrar.
+    O sistema central apenas:
+        Localiza os plug-ins corretos.
+        Chama sua execução de forma genérica.
+
+**Organização do Sistema Central**
+  Uma arquitetura em camadas.
+  Um bloco monolítico modular.
+  Dividido em serviços de domínio separados (cada um com seus plug-ins).
+
+
+**Camada de apresentação**
+    A camada de apresentação pode:
+      Estar incorporada ao sistema central, ou
+      Ser uma interface de usuário separada (o sistema central fornece back-end).
+    A interface separada também pode seguir o estilo microkernel (variações mostradas nas figuras citadas).
+
+**Componentes de plug-in**
+    São autônomos e independentes; contêm processamento especializado e código personalizado.
+    Isolam código volátil, melhorando manutenção e testabilidade.
+    Idealmente sem dependências entre plug-ins.
+
+**Comunicação plug-in <-> sistema central**
+    Normalmente ponto a ponto: chamada de método/função para o ponto de entrada do plug-in.
+    Dois modelos de implantação:
+        Tempo de execução: plug-ins podem ser adicionados/removidos sem redeploy; gerenciados por frameworks (ex.: OSGi, Jigsaw, Prism).
+        Compilação: mais simples, mas exige redeploy da aplicação inteira para mudanças.
+
+**Formas de implementação**
+    Bibliotecas compartilhadas (JAR, DLL, Gem) — plug-in como artefato separado.
+    Namespaces / pacotes no mesmo código — ex.: app.plugin.<domínio>.<contexto> (recomendado para organização).
+
+**Plug-ins remotos (REST / mensageria / microsserviços)**
+    Alternativa: cada plug-in é um serviço independente acessado via REST ou mensageria.
+    Benefícios:
+      Maior desacoplamento, escalabilidade e throughput.
+      Permite alterações em execução sem frameworks especializados.
+      Suporta comunicação assíncrona (melhora resposta ao usuário).
+  
+    Trade-offs / desvantagens:
+      Torna a arquitetura distribuída (mais complexa de implantar).
+      Aumenta custo e complexidade operacional.
+      Se um plug-in remoto ficar sem resposta (ex.: REST), a requisição pode falhar — problema menor em implementação monolítica.
+
+**Padrão de acesso ao banco de dados**
+    Não é comum que plug-ins acessem diretamente um banco de dados compartilhado.
+    Responsabilidade do sistema central: acessar o DB e repassar dados aos plug-ins (maior desacoplamento).
+    Plug-ins podem ter seu próprio armazenamento (local ou externo) para dados específicos:
+    Esse armazenamento pode ser externo ou embutido (em memória, embutido, etc.).
+
+
+**Registro de Plug-ins**
+    O sistema central precisa saber:
+        Quais plug-ins existem
+        Como acessá-los
 
 Para isso, utiliza um registro de plug-ins.
 
@@ -1761,137 +1695,83 @@ Aula 10.11 e 11.11
 
 **Capítulo 17: Arquitetura de Microsserviços**
 
-1. Introdução
-
-Microsserviços são um estilo de arquitetura muito popular nos últimos anos.
-
-Diferenciam-se por sua topologia e filosofia de desenvolvimento.
-
-2. História dos Microsserviços
-
-Diferente de outros estilos, o termo microsserviços surgiu antes de seu uso massivo.
-
-Popularizados por Martin Fowler e James Lewis no blog “Microservices” (2014).
-
-A postagem identificou características comuns e ajudou a consolidar o estilo na indústria.
-
-3. Influência do DDD (Domain-Driven Design)
-
-Microsserviços são fortemente inspirados pelo DDD.
-
-Principal conceito influente: Contexto Delimitado (Bounded Context).
-
-Representa uma forma de desacoplamento lógico e físico.
-
-Cada domínio possui suas próprias entidades, regras e até banco de dados.
-
-4. Comparação com Arquitetura Monolítica
-
-Em monolíticos:
-
-Domínios compartilham classes, tabelas, modelos e funcionalidades.
-
-Reutilização é comum → porém introduz acoplamento.
-
-Em microsserviços:
-
-Cada contexto delimitado funciona de forma independente.
-
-Não compartilha código, classes ou esquemas de banco de dados.
-
-Cada serviço define apenas o que precisa.
-
-5. Reutilização vs Desacoplamento
-
-Primeira Lei da Arquitetura de Software: tudo envolve trade-offs.
-
-Reutilização → aumenta acoplamento.
-
-Microsserviços priorizam desacoplamento máximo, mesmo que isso leve a:
-
-Duplicação de código
-
-Duplicação de modelos
-
-Independência total entre serviços
-
-6. Objetivo Principal dos Microsserviços
-
-Alto desacoplamento.
-
-A arquitetura implementa fisicamente a ideia de contextos delimitados do DDD.
-
-Cada microsserviço é um domínio próprio, autônomo e evolui sozinho.
-
-Visão Geral
-
-Microsserviços possuem tamanho reduzido, focados em uma única finalidade.
-
-Cada serviço contém tudo que precisa para funcionar sozinho, incluindo seu banco de dados.
-
-Arquitetura Distribuída
-
-Cada microsserviço roda em seu próprio processo (máquina física, VM ou contêiner).
-
-O desacoplamento extremo melhora:
-
-Isolamento
-
-Autonomia
-
-Independência operacional
-
-Tecnologias como nuvem e contêineres tornaram essa abordagem viável.
-
-Problemas Resolvidos pelo Isolamento
-
-Evita limitações comuns da infraestrutura multilocatária:
-
-Disputa por recursos (CPU, memória, rede, disco)
-
-Falta de isolamento entre aplicações
-
-Cada serviço possui sua própria infraestrutura virtualizada.
-
-Desafios de Performance
-
-Chamadas entre serviços são mais lentas que chamadas internas de métodos.
-
-Há overhead adicional por:
-
-Comunicação em rede
-
-Verificação de segurança em cada ponto
-
-Isso exige cuidado ao definir granularidade dos serviços.
-
-Transações Distribuídas
-
-Consideradas perigosas e devem ser evitadas.
-
-Transações que atravessam múltiplos serviços tornam o sistema frágil.
-
-Determinar a granularidade adequada dos serviços é essencial para o sucesso da arquitetura.
-
-Contexto Delimitado
-
-Filosofia central dos microsserviços.
-
-Cada serviço representa um domínio ou fluxo de trabalho completo.
-
-Cada serviço contém:
-
-Suas próprias classes
-
-Subcomponentes necessários
-
-Seu próprio esquema de banco de dados
-
-Preferência pela duplicação ao acoplamento — evita dependências compartilhadas.
-
-Microsserviços são a materialização física dos conceitos do Domain-Driven Design (DDD).
-
-Granularidade
+  Microsserviços são um estilo de arquitetura muito popular nos últimos anos.
+
+  Diferenciam-se por sua topologia e filosofia de desenvolvimento.
+
+**História dos Microsserviços**
+  Diferente de outros estilos, o termo microsserviços surgiu antes de seu uso massivo.
+  Popularizados por Martin Fowler e James Lewis no blog “Microservices” (2014).
+  A postagem identificou características comuns e ajudou a consolidar o estilo na indústria.
+
+**Influência do DDD (Domain-Driven Design)**
+  Microsserviços são fortemente inspirados pelo DDD.
+  Principal conceito influente: Contexto Delimitado (Bounded Context).
+  Representa uma forma de desacoplamento lógico e físico.
+  Cada domínio possui suas próprias entidades, regras e até banco de dados.
+
+**Comparação com Arquitetura Monolítica**
+  Em monolíticos:
+    Domínios compartilham classes, tabelas, modelos e funcionalidades.
+    Reutilização é comum → porém introduz acoplamento.
+  Em microsserviços:
+    Cada contexto delimitado funciona de forma independente.
+    Não compartilha código, classes ou esquemas de banco de dados.
+    Cada serviço define apenas o que precisa.
+
+**Reutilização vs Desacoplamento**
+  Primeira Lei da Arquitetura de Software: tudo envolve trade-offs.
+  Reutilização → aumenta acoplamento.
+  Microsserviços priorizam desacoplamento máximo, mesmo que isso leve a:
+  Duplicação de código
+  Duplicação de modelos
+  Independência total entre serviços
+
+**Objetivo Principal dos Microsserviços**
+  Alto desacoplamento.
+  A arquitetura implementa fisicamente a ideia de contextos delimitados do DDD.
+  Cada microsserviço é um domínio próprio, autônomo e evolui sozinho.
+
+
+  Microsserviços possuem tamanho reduzido, focados em uma única finalidade.
+  Cada serviço contém tudo que precisa para funcionar sozinho, incluindo seu banco de dados.
+
+**Arquitetura Distribuída**
+  Cada microsserviço roda em seu próprio processo (máquina física, VM ou contêiner).
+  O desacoplamento extremo melhora:
+  Isolamento
+  Autonomia
+  Independência operacional
+  Tecnologias como nuvem e contêineres tornaram essa abordagem viável.
+
+**Problemas Resolvidos pelo Isolamento**
+  Evita limitações comuns da infraestrutura multilocatária:
+  Disputa por recursos (CPU, memória, rede, disco)
+  Falta de isolamento entre aplicações
+  Cada serviço possui sua própria infraestrutura virtualizada.
+
+**Desafios de Performance**
+  Chamadas entre serviços são mais lentas que chamadas internas de métodos.
+  Há overhead adicional por:
+      Comunicação em rede
+      Verificação de segurança em cada ponto
+
+**Transações Distribuídas**
+  Consideradas perigosas e devem ser evitadas.
+  Transações que atravessam múltiplos serviços tornam o sistema frágil.
+  Determinar a granularidade adequada dos serviços é essencial para o sucesso da arquitetura.
+
+**Contexto Delimitado**
+  Filosofia central dos microsserviços.
+  Cada serviço representa um domínio ou fluxo de trabalho completo.
+  Cada serviço contém:
+      Suas próprias classes
+      Subcomponentes necessários
+      Seu próprio esquema de banco de dados
+  Preferência pela duplicação ao acoplamento — evita dependências compartilhadas.
+  Microsserviços são a materialização física dos conceitos do Domain-Driven Design (DDD).
+
+**Granularidade**
 Problema comum
 
 Arquitetos tendem a criar serviços pequenos demais, exigindo muita comunicação entre eles.
