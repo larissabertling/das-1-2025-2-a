@@ -1772,198 +1772,69 @@ Aula 10.11 e 11.11
   Microsserviços são a materialização física dos conceitos do Domain-Driven Design (DDD).
 
 **Granularidade**
-Problema comum
+    Arquitetos tendem a criar serviços pequenos demais, exigindo muita comunicação entre eles.
 
-Arquitetos tendem a criar serviços pequenos demais, exigindo muita comunicação entre eles.
+    “Microsserviço é um rótulo, não uma descrição.” — Martin Fowler
 
-Frase importante
+    Delimitar serviços por domínio ou fluxo de trabalho.
+    Nem todo domínio é pequeno – alguns requerem serviços maiores.
 
-“Microsserviço é um rótulo, não uma descrição.” — Martin Fowler
+**Diretrizes para definir granularidade**
+    Finalidade
+        Cada serviço deve ser muito coeso funcionalmente.
+        Deve entregar um comportamento relevante dentro do sistema.
+    Transações
+        Entidades que participam juntas de uma transação indicam um limite natural.
+        Como transações distribuídas são ruins, definir bem os limites evita esse problema.
+    Coreografia
+        Se vários serviços precisam conversar demais para funcionar, pode ser sinal de que deveriam ser agrupados em um serviço maior.
 
-Objetivo dos limites
 
-Delimitar serviços por domínio ou fluxo de trabalho.
+**Isolamento dos Dados**
+    Derivado do contexto delimitado: cada serviço deve ter seu próprio banco de dados.
+    Evita:  Acoplamento por esquemas compartilhados, Pontos de integração fracos via BD único
 
-Nem todo domínio é pequeno – alguns requerem serviços maiores.
+    Não modelar serviços simplesmente imitando tabelas do banco de dados.
 
-Diretrizes para definir granularidade
+    Ao abandonar o BD centralizado, o arquiteto precisa decidir: Qual domínio é a fonte confiável de um dado.
 
-Finalidade
 
-Cada serviço deve ser muito coeso funcionalmente.
+**Oportunidades trazidas pelo isolamento**
+    Cada serviço pode escolher o melhor tipo de armazenamento (SQL, NoSQL, chave-valor, etc.).
+    Serviços podem mudar sua tecnologia interna sem impactar outros serviços.
+    Maior flexibilidade e evolução independente.
 
-Deve entregar um comportamento relevante dentro do sistema.
+**Camada da API**
+    É opcional na arquitetura de microsserviços.
+    Usada para:  Proxy , Serviços de nomenclatura, Indireção e facilidades operacionais
+    Não deve ser usada como: Mediador, Orquestrador
+      Motivo:  Orquestração deve ocorrer dentro dos contextos delimitados, não fora.
+              Mediadores são típicos de arquiteturas particionadas tecnicamente, enquanto microsserviços são particionados por domínio.
 
-Transações
+**Reutilização Operacional**
+    Microsserviços preferem duplicação ao acoplamento, mas isso cria um desafio para áreas que se beneficiam de acoplamento: Monitoramento, Logging , Circuit breakers
+    Em microsserviços, a regra é separar preocupações de domínio das operacionais.
 
-Entidades que participam juntas de uma transação indicam um limite natural.
+**Padrão Sidecar**
+    Solução para reutilização operacional sem acoplamento funcional.
+    Cada microsserviço tem um componente separado (sidecar) que cuida de:
+        Monitoramento, Logs, Segurança, Circuit breakers, Configurações operacionais
+    Atualizações são feitas apenas no sidecar, propagando automaticamente para todos os serviços.
 
-Como transações distribuídas são ruins, definir bem os limites evita esse problema.
+**Malha de Serviços (Service Mesh)**
+    Conjunto de sidecars conectados, criando: Um plano de serviço unificado , Controle operacional centralizado
+    Benefícios: Monitoramento global, Log unificado, Segurança padronizada, Observabilidade integrada
 
-Coreografia
+    Cada microsserviço aparece como um nó na malha.
 
-Se vários serviços precisam conversar demais para funcionar, pode ser sinal de que deveriam ser agrupados em um serviço maior.
+**Console da Malha de Serviços**
+    Fornece: Visão operacional global, Configuração centralizada, Diagnóstico e gestão da infraestrutura distribuída
 
-Iteração é essencial
-
-Descobrir a granularidade correta geralmente exige várias revisões.
-
-Isolamento dos Dados
-
-Derivado do contexto delimitado: cada serviço deve ter seu próprio banco de dados.
-
-Evita:
-
-Acoplamento por esquemas compartilhados
-
-Pontos de integração fracos via BD único
-
-Atenção à armadilha da entidade
-
-Não modelar serviços simplesmente imitando tabelas do banco de dados.
-
-Fonte confiável e sincronização
-
-Ao abandonar o BD centralizado, o arquiteto precisa decidir:
-
-Qual domínio é a fonte confiável de um dado.
-
-Como os demais acessam essa informação:
-
-consulta ao domínio responsável
-
-replicação de dados
-
-cache
-
-Oportunidades trazidas pelo isolamento
-
-Cada serviço pode escolher o melhor tipo de armazenamento (SQL, NoSQL, chave-valor, etc.).
-
-Serviços podem mudar sua tecnologia interna sem impactar outros serviços.
-
-Maior flexibilidade e evolução independente.
-
-Camada da API
-
-É opcional na arquitetura de microsserviços.
-
-Usada para:
-
-Proxy
-
-Serviços de nomenclatura
-
-Indireção e facilidades operacionais
-
-Não deve ser usada como:
-
-Mediador
-
-Orquestrador
-
-Motivo:
-
-Orquestração deve ocorrer dentro dos contextos delimitados, não fora.
-
-Mediadores são típicos de arquiteturas particionadas tecnicamente, enquanto microsserviços são particionados por domínio.
-
-Reutilização Operacional
-
-Microsserviços preferem duplicação ao acoplamento, mas isso cria um desafio para áreas que se beneficiam de acoplamento:
-
-Monitoramento
-
-Logging
-
-Circuit breakers
-
-Nas antigas arquiteturas SOA, isso era centralizado e reutilizado ao máximo.
-
-Em microsserviços, a regra é separar preocupações de domínio das operacionais.
-
-Problema
-
-Se cada equipe implementar seu próprio monitoramento/log:
-
-Diferenças de qualidade
-
-Dificuldade de padronizar upgrades
-
-Manutenção complexa
-
-Padrão Sidecar
-
-Solução para reutilização operacional sem acoplamento funcional.
-
-Cada microsserviço tem um componente separado (sidecar) que cuida de:
-
-Monitoramento
-
-Logs
-
-Segurança
-
-Circuit breakers
-
-Configurações operacionais
-
-Atualizações são feitas apenas no sidecar, propagando automaticamente para todos os serviços.
-
-Malha de Serviços (Service Mesh)
-
-Conjunto de sidecars conectados, criando:
-
-Um plano de serviço unificado
-
-Controle operacional centralizado
-
-Benefícios:
-
-Monitoramento global
-
-Log unificado
-
-Segurança padronizada
-
-Observabilidade integrada
-
-Cada microsserviço aparece como um nó na malha.
-
-Console da Malha de Serviços
-
-Fornece:
-
-Visão operacional global
-
-Configuração centralizada
-
-Diagnóstico e gestão da infraestrutura distribuída
-
-Descoberta de Serviços
-
-Usada para permitir:
-
-Elasticidade
-
-Escalabilidade automática
-
-Requisições passam por um serviço de descoberta que:
-
-Identifica instâncias disponíveis
-
-Ativa novas instâncias conforme demanda
-
-Pode ser integrada à malha de serviços.
-
-Comumente hospedada na Camada da API, como ponto central onde:
-
-UI
-
-Outros sistemas
-
-Chamadores externos
-encontram os serviços disponíveis.
+**Descoberta de Serviços**  
+    Usada para permitir: Elasticidade, Escalabilidade automática
+    Requisições passam por um serviço de descoberta que: Identifica instâncias disponíveis, Ativa novas instâncias conforme demanda
+    Pode ser integrada à malha de serviços.
+  Comumente hospedada na Camada da API, como ponto central onde: UI, Outros sistemas, Chamadores externos encontram os serviços disponíveis.
 
 
 Front-ends em Microsserviços
