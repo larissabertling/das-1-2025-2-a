@@ -1808,5 +1808,360 @@ Aula 10.11 e 11.11
 
 _________________________________________________________________________________________________________________
 
+AULAS 11, 17 E 18.11
+
+IMPLEMENTAÇÃO DOS CÓDIGOS:
+
+PASSO A PASSO:
+
+**Dapr + app-a + app-b**
+**1. Preparar ambiente (pré-requisitos)**
+    Instalar Docker.
+    Instalar Dapr CLI.
+    Instalar VSCode Dapr Extension.
+
+Se estiver em Codespace / VM, instalar Maven:
+    sudo su
+    apt-get update -y
+    apt-get upgrade -y
+    apt-get install maven -y
+    exit
+
+Criar um arquivo .gitignore na raiz do repositório.
+
+**2. Estrutura do projeto (multi-módulo Maven)**
+  Na raiz do repositório, criar pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>br.univille</groupId>
+    <artifactId>devtec-cncf-dapr</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <name>Multi Project: DEVTEC CNCF DAPR</name>
+
+    <modules>
+        <module></module>
+    </modules>
+</project>
+
+
+**3. Criar o projeto app-a**
+  No VSCode: F1 → Spring Initializr: create a maven project.
+  Spring: última estável (ex.: 3.x)
+  Linguagem: Java
+  GroupId: br.univille
+  ArtifactId: app-a
+  Packaging: JAR
+  Java version: 21
+  Dependencies: Spring Web
+  Modificar o pom.xml raiz para incluir o módulo app-a
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>br.univille</groupId>
+    <artifactId>das1b</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <name>Multi Project</name>
+
+    <modules>
+        <module>app-a</module>
+    </modules>
+</project>
+
+  Rodar no VSCode: F1 → Java: Clean Java Language Server Workspace.
+  Iniciar o ambiente do Dapr Runtime
+
+**4. Adicionar dependências Dapr (app-a e app-b)**
+
+   dapr init
+  docker ps
+
+No pom.xml do respectivo módulo app-a para incluir as dependencias do Dapr
+
+    <dependency>
+        <groupId>io.dapr</groupId>
+        <artifactId>dapr-sdk</artifactId>
+        <version>1.16.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.dapr</groupId>
+        <artifactId>dapr-sdk-springboot</artifactId>
+        <version>1.16.0</version>
+    </dependency>
+
+**Construindo o padrão Service Invocation** 
+
+DOCUMENTAÇÃO: https://docs.dapr.io/developing-applications/building-blocks/service-invocation/service-invocation-overview/
+Visão geral da invocação de serviços
+Visão geral do bloco de construção da API de invocação de serviço
+Ao utilizar a invocação de serviços, seu aplicativo pode se comunicar de forma confiável e segura com outros aplicativos usando os protocolos padrão gRPC ou HTTP .
+
+
+Dapr SDK Java: https://docs.dapr.io/developing-applications/sdks/java/java-client/
+Cliente
+O pacote cliente Dapr permite que você interaja com outros aplicativos Dapr a partir de um aplicativo Java.
+
+
+**5. Na raiz, criar dapr.yaml com a configuração das Aplicações:**
+
+version: 1
+common:
+  resourcesPath: ./components/
+apps:
+  - appID: app-a
+    appDirPath: ./app-a/target/
+    appPort: 8080
+    command: ["java", "-jar", "app-a-0.0.1-SNAPSHOT.jar"]
+
+**6. Criar pasta components/ na raiz (para integradores Dapr, se necessário).**
+**7. No projeto app-a dentro do pacote java.br.univille.app_a um pacote controller e a classe HomeController.java**
+
+package br.univille.app_a.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseEntity;
+
+@RestController
+@RequestMapping("/api/v1")
+public class HomeController {
+
+    //  ******** APPLICAÇÃO A  ************
+
+    @GetMapping()
+    public ResponseEntity index() {
+        return ResponseEntity.ok().body("Hello from App A");
+    }
+}
+
+**8. Executar o Maven para fazer o build da aplicação e em seguida o Dapr para executar a aplicação com o side car**
+    mvn --projects app-a,app-b  package -DskipTests
+    dapr run -f dapr.yaml
+
+**9. Criar na raiz do projeto um arquivo teste.rest com a chamada para o método**
+
+  ### App A GET
+  GET http://localhost:8080/api/v1
+
+**10. Abra um novo bash para testar a invocação pelo Dapr**
+   dapr invoke -a app-a --method api --verb GET
+
+**11. Utilize o comando Control + C para interromper a execução do Dapr**
+
+
+
+**12. Criar o projeto app-b**
+
+No VSCode: F1 → Spring Initializr: create a maven project.
+
+Mesmas escolhas que app-a, exceto:
+
+ArtifactId: app-b
+
+Adicionar app-b no pom.xml raiz (<modules>).
+
+**13. Modificar o arquivo pom.xml na raiz do repositório para identificar o projeto:**
+
+    <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>br.univille</groupId>
+    <artifactId>devtec-cncf-dapr</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <name>Multi Project: DEVTEC CNCF DAPR</name>
+
+    <modules>
+        <module>app-a</module>
+        <module>app-b</module>
+    </modules>
+</project>
+
+**14. Teclar F1 e digitar java:clean java language server workspace**
+
+**15. Iniciar o ambiente do Dapr Runtime**
+
+**16. Modificar o arquivo pom.xml do projeto app-a para incluir as dependencias do Dapr:**
+        <dependency>
+        <groupId>io.dapr</groupId>
+        <artifactId>dapr-sdk</artifactId>
+        <version>1.16.0</version>
+    </dependency>
+    <dependency>
+        <groupId>io.dapr</groupId>
+        <artifactId>dapr-sdk-springboot</artifactId>
+        <version>1.16.0</version>
+    </dependency>
+
+**17. Modifique o arquivo do projeto app-b no pacote src/main/resources/application.properties para modificar a porta que a API será servida**
+
+      spring.application.name=app-b
+      server.port=8081
+
+**18. Modifique na raiz do projeto o arquivo dapr.yaml**
+
+  version: 1
+common:
+  resourcesPath: ./components/
+apps:
+  - appID: app-a
+    appDirPath: ./app-a/target/
+    appPort: 8080
+    command: ["java", "-jar", "app-a-0.0.1-SNAPSHOT.jar"]
+  - appID: app-b
+    appDirPath: ./app-b/target/
+    appPort: 8081
+    command: ["java", "-jar", "app-b-0.0.1-SNAPSHOT.jar"]
+
+**19. No projeto app-b dentro do pacote java.br.univille.app_b um pacote controller e a classe HomeController.java**
+      package br.univille.app_b.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseEntity;
+
+@RestController
+@RequestMapping("/api/v1")
+public class HomeController {
+    
+    //  ******** APPLICAÇÃO B  ************
+
+    @GetMapping()
+    public ResponseEntity index() {
+        return ResponseEntity.ok().body("Hello from App B");
+    }
+}
+
+**20.Executar o Maven para fazer o build da aplicação e em seguida o Dapr para executar a aplicação com o side car**
+  mvn --projects app-a,app-b  package -DskipTests
+  dapr run -f dapr.yaml
+
+**21. Modifique o arquivo teste.rest com a chamada para o método**
+    ### App B GET
+    GET http://localhost:8081/api/v1
+
+**22. Abra um novo bash para testar a invocação pelo Dapr**
+    dapr invoke -a app-b --method api --verb GET
+
+
+**Invocação Síncrona**
+**23. Altere a classe HomeController.java do projeto app-a para fazer uma chamada síncrona para a app-b**
+  private static final String SERVICE_APP_B = "app-b";
+
+@PostMapping("/startsync")
+public ResponseEntity startASync() {
+    System.out.println("App A started");
+    try(DaprClient daprClient = new DaprClientBuilder().build()){
+        var message = "Hello from App A";
+        daprClient.invokeMethod(SERVICE_APP_B, "/api/startsync", message, HttpExtension.POST).block();
+
+        
+    }catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+        return ResponseEntity.status(500).body("Error starting App A");
+    }
+    return ResponseEntity.ok().body("App A started");
+}
+
+**24. Altere a classe HomeController.java do projeto app-b para possuir um método que será chamado pela app-a**
+    @PostMapping("/startsync")
+public ResponseEntity startBSync(@RequestBody String message) {
+    System.out.println("App B started");
+    System.out.println("Message received: " + message);
+    return ResponseEntity.ok().body("App B started");
+}
+
+**25. Executar o Maven para fazer o build da aplicação e em seguida o Dapr para executar a aplicação com o side car**
+
+    mvn --projects app-a,app-b  package -DskipTests
+dapr run -f dapr.yaml
+
+**26. Modifique o arquivo teste.rest com a chamada para o método**
+
+    ### App A POST /startsync
+POST http://localhost:8080/api/startsync
+
+**Invocação Assíncrona**
+
+DOCUMENTAÇÃO: https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/
+Visão geral de publicação e assinatura
+Visão geral do bloco de construção da API pub/sub
+Publicar e assinar (pub/sub) permite que microsserviços se comuniquem entre si usando mensagens para arquiteturas orientadas a eventos.
+
+O produtor, ou editor , escreve mensagens para um canal de entrada e as envia para um tópico, sem saber qual aplicativo as receberá.
+O consumidor, ou assinante , se inscreve no tópico e recebe mensagens de um canal de saída, sem saber qual serviço produziu essas mensagens.
+Um agente de mensagens intermediário copia cada mensagem do canal de entrada de um editor para um canal de saída para todos os assinantes interessados ​​nessa mensagem. Esse padrão é especialmente útil quando você precisa desacoplar microsserviços uns dos outros.
+
+https://docs.dapr.io/developing-applications/sdks/java/java-client/
+Cliente
+O pacote cliente Dapr permite que você interaja com outros aplicativos Dapr a partir de um aplicativo Java.
+
+**27. Crie dentro da pasta components, um arquivo chamado pubsub.yaml**
+    apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub-dapr
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+  - name: redisHost
+    value: localhost:6379
+  - name: redisPassword
+    value: ""
+scopes:
+  - app-a
+  - app-b
+
+**28. Altere a classe HomeController.java do projeto app-a para fazer uma chamada assíncrona para a app-b publicando um evento**
+
+  private static final String PUBSUBNAME = "pubsub-dapr";
+private static final String TOPICNAME = "topicodapr";
+
+@PostMapping("/pub")
+public ResponseEntity startAASync() {
+    System.out.println("App A started");
+    try(DaprClient daprClient = new DaprClientBuilder().build()){
+        var message = "Hello from App A";
+        daprClient.publishEvent(PUBSUBNAME, TOPICNAME, message).block();
+
+    }catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+        return ResponseEntity.status(500).body("Error starting App A");
+    }
+    return ResponseEntity.ok().body("App A started");
+}
+
+**29. Altere a classe HomeController.java do projeto app-b para possuir um método que irá consumir os eventos publicados por app-a**
+
+  @Topic(pubsubName = "pubsub-dapr", name = "topicodapr")
+@PostMapping(path="/sub", consumes = MediaType.ALL_VALUE)
+public ResponseEntity startBASync(@RequestBody(required = false) CloudEvent<String> cloudEvent) {
+    System.out.println("App B started");
+    var idMessage = cloudEvent.getId();
+    var message = cloudEvent.getData();
+    System.out.println("Message " + idMessage +  " received: " + message);
+    return ResponseEntity.ok().body("App B started");
+}
+
+**30. Executar o Maven para fazer o build da aplicação e em seguida o Dapr para executar a aplicação com o side car**
+    mvn --projects app-a,app-b  package -DskipTests
+    dapr run -f dapr.yaml
+
+**31. Modifique o arquivo teste.rest com a chamada para o método**
+    ### App A POST /startasync
+    POST http://localhost:8080/api/v1/pub
 
 
